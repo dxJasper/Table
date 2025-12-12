@@ -1,0 +1,206 @@
+@typeparam TItem where TItem : class, new()
+@using Table.Models
+
+<div class="grid-container">
+    <table class="custom-datagrid">
+        <thead>
+            <tr>
+                @foreach (var column in Columns)
+                {
+                    <th class="@(column.Sortable ? "sortable" : "")"
+                        @onclick="() => SortByColumn(column)">
+                        @column.HeaderText
+                        @if (column.Sortable)
+                        {
+                            <span class="sort-icon @GetSortClass(column)"></span>
+                        }
+                    </th>
+                }
+                <th class="actions-header">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Items)
+            {
+                <tr class="@GetRowClass(item)">
+                    @foreach (var column in Columns)
+                    {
+                        <td>
+                            @if (IsEditing(item))
+                            {
+                                @column.EditTemplate(item)
+                            }
+                            else
+                            {
+                                @column.DisplayTemplate(item)
+                            }
+                        </td>
+                    }
+                    <td class="actions-cell">
+                        @if (IsEditing(item))
+                        {
+                            <button class="btn btn-save" @onclick="() => SaveRow(item)">Save</button>
+                            <button class="btn btn-cancel" @onclick="() => CancelEdit(item)">Cancel</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-edit" @onclick="() => EditRow(item)">Edit</button>
+                            <button class="btn btn-delete" @onclick="() => DeleteRow(item)">Delete</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button class="btn btn-add" @onclick="AddNewRow">Add New Row</button>
+</div>
+
+@code {
+    [Parameter]
+    public List<TItem> Items { get; set; } = new();
+
+    [Parameter]
+    public List<GridColumn<TItem>> Columns { get; set; } = new();
+
+    [Parameter]
+    public Func<TItem>? CreateNewItem { get; set; }
+
+    [Parameter]
+    public Func<TItem, TItem>? CloneItem { get; set; }
+
+    [Parameter]
+    public EventCallback<TItem> OnItemSaved { get; set; }
+
+    [Parameter]
+    public EventCallback<TItem> OnItemDeleted { get; set; }
+
+    [Parameter]
+    public EventCallback<TItem> OnItemAdded { get; set; }
+
+    private TItem? EditingItem { get; set; }
+    private TItem? OriginalItem { get; set; }
+    private string? CurrentSortColumn { get; set; }
+    private bool IsSortAscending { get; set; } = true;
+
+    private bool IsEditing(TItem item)
+    {
+        return EditingItem == item;
+    }
+
+    private string GetRowClass(TItem item)
+    {
+        if (EditingItem == item)
+        {
+            return IsNewItem(item) ? "editing new-row" : "editing";
+        }
+        return "data-row";
+    }
+
+    private bool IsNewItem(TItem item)
+    {
+        return OriginalItem == null && EditingItem == item;
+    }
+
+    private void EditRow(TItem item)
+    {
+        if (CloneItem != null)
+        {
+            OriginalItem = CloneItem(item);
+        }
+        EditingItem = item;
+    }
+
+    private async Task SaveRow(TItem item)
+    {
+        if (IsNewItem(item))
+        {
+            await OnItemAdded.InvokeAsync(item);
+        }
+        else
+        {
+            await OnItemSaved.InvokeAsync(item);
+        }
+
+        EditingItem = null;
+        OriginalItem = null;
+    }
+
+    private void CancelEdit(TItem item)
+    {
+        if (IsNewItem(item))
+        {
+            Items.Remove(item);
+        }
+        else if (OriginalItem != null)
+        {
+            CopyProperties(OriginalItem, item);
+        }
+
+        EditingItem = null;
+        OriginalItem = null;
+    }
+
+    private async Task DeleteRow(TItem item)
+    {
+        Items.Remove(item);
+        await OnItemDeleted.InvokeAsync(item);
+    }
+
+    private void AddNewRow()
+    {
+        TItem newItem;
+
+        if (CreateNewItem != null)
+        {
+            newItem = CreateNewItem();
+        }
+        else
+        {
+            newItem = new TItem();
+        }
+
+        Items.Add(newItem);
+        EditingItem = newItem;
+    }
+
+    private void SortByColumn(GridColumn<TItem> column)
+    {
+        if (!column.Sortable || column.SortExpression == null) return;
+
+        if (CurrentSortColumn == column.HeaderText)
+        {
+            IsSortAscending = !IsSortAscending;
+        }
+        else
+        {
+            CurrentSortColumn = column.HeaderText;
+            IsSortAscending = true;
+        }
+
+        Items = IsSortAscending
+            ? Items.OrderBy(column.SortExpression.Compile()).ToList()
+            : Items.OrderByDescending(column.SortExpression.Compile()).ToList();
+    }
+
+    private string GetSortClass(GridColumn<TItem> column)
+    {
+        if (CurrentSortColumn == column.HeaderText)
+        {
+            return IsSortAscending ? "sort-asc" : "sort-desc";
+        }
+        return string.Empty;
+    }
+
+    private void CopyProperties(TItem source, TItem destination)
+    {
+        var properties = typeof(TItem).GetProperties()
+            .Where(p => p.CanRead && p.CanWrite);
+
+        foreach (var property in properties)
+        {
+            var value = property.GetValue(source);
+            property.SetValue(destination, value);
+        }
+    }
+}

@@ -1,0 +1,292 @@
+@page "/"
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode())
+
+@using Table.Components
+@using Table.Models
+
+<PageTitle>Generic Data Grid Demo</PageTitle>
+
+<div class="page-container">
+    <h1>Generic Data Grid with Custom Field Types</h1>
+    <p class="description">This grid demonstrates various input field types: text, email, number, date, checkbox, select, textarea, and more.</p>
+
+    <DataGridComponent TItem="Employee"
+              Items="@employees"
+              Columns="@columns"
+              CreateNewItem="@CreateNewEmployee"
+              CloneItem="@CloneEmployee"
+              OnItemSaved="@HandleItemSaved"
+              OnItemDeleted="@HandleItemDeleted"
+              OnItemAdded="@HandleItemAdded" />
+</div>
+
+@code {
+    private List<Employee> employees = new();
+    private List<GridColumn<Employee>> columns = new();
+    private int nextId = 6;
+
+    protected override void OnInitialized()
+    {
+        LoadSampleData();
+        ConfigureColumns();
+    }
+
+    private void LoadSampleData()
+    {
+        employees = new List<Employee>
+        {
+            new Employee { Id = 1, Name = "John Doe", Email = "john.doe@company.com", Age = 30, Department = "IT", IsActive = true, HireDate = new DateTime(2020, 1, 15), Salary = 75000, Position = "Developer", Notes = "Senior developer" },
+            new Employee { Id = 2, Name = "Jane Smith", Email = "jane.smith@company.com", Age = 25, Department = "HR", IsActive = true, HireDate = new DateTime(2021, 3, 10), Salary = 60000, Position = "HR Manager", Notes = "Excellent communication" },
+            new Employee { Id = 3, Name = "Bob Johnson", Email = "bob.johnson@company.com", Age = 35, Department = "Finance", IsActive = false, HireDate = new DateTime(2019, 7, 20), Salary = 85000, Position = "Accountant", Notes = "On leave" },
+            new Employee { Id = 4, Name = "Alice Williams", Email = "alice.williams@company.com", Age = 28, Department = "Marketing", IsActive = true, HireDate = new DateTime(2022, 2, 5), Salary = 65000, Position = "Marketing Lead", Notes = "Creative thinker" },
+            new Employee { Id = 5, Name = "Charlie Brown", Email = "charlie.brown@company.com", Age = 42, Department = "IT", IsActive = true, HireDate = new DateTime(2018, 11, 1), Salary = 95000, Position = "Tech Lead", Notes = "Team mentor" }
+        };
+    }
+
+    private void ConfigureColumns()
+    {
+        columns = new List<GridColumn<Employee>>
+        {
+            // ID Column (readonly)
+            new GridColumn<Employee>
+            {
+                HeaderText = "ID",
+                Sortable = true,
+                SortExpression = e => e.Id,
+                DisplayTemplate = employee => @<span>@employee.Id</span>,
+                EditTemplate = employee => @<input type="text" class="grid-input readonly" value="@employee.Id" readonly />
+            },
+
+            // Name Column (text input)
+            new GridColumn<Employee>
+            {
+                HeaderText = "Name",
+                Sortable = true,
+                SortExpression = e => e.Name,
+                DisplayTemplate = employee => @<span>@employee.Name</span>,
+                EditTemplate = employee => @<input type="text" class="grid-input" @bind="employee.Name" placeholder="Enter name" />
+            },
+
+            // Email Column (email input)
+            new GridColumn<Employee>
+            {
+                HeaderText = "Email",
+                Sortable = true,
+                SortExpression = e => e.Email,
+                DisplayTemplate = employee => @<span>@employee.Email</span>,
+                EditTemplate = employee => @<input type="email" class="grid-input" @bind="employee.Email" placeholder="Enter email" />
+            },
+
+            // Age Column (number input)
+            new GridColumn<Employee>
+            {
+                HeaderText = "Age",
+                Sortable = true,
+                SortExpression = e => e.Age,
+                DisplayTemplate = employee => @<span>@employee.Age</span>,
+                EditTemplate = employee => @<input type="number" class="grid-input" @bind="employee.Age" min="18" max="100" placeholder="Age" />
+            },
+
+            // Department Column (select dropdown)
+            new GridColumn<Employee>
+            {
+                HeaderText = "Department",
+                Sortable = true,
+                SortExpression = e => e.Department,
+                DisplayTemplate = employee => @<span>@employee.Department</span>,
+                EditTemplate = employee =>
+                    @<select class="grid-select" @bind="employee.Department">
+                        <option value="">Select...</option>
+                        <option value="IT">IT</option>
+                        <option value="HR">HR</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Sales">Sales</option>
+                    </select>
+            },
+
+            // Position Column (text input)
+            new GridColumn<Employee>
+            {
+                HeaderText = "Position",
+                Sortable = true,
+                SortExpression = e => e.Position,
+                DisplayTemplate = employee => @<span>@employee.Position</span>,
+                EditTemplate = employee => @<input type="text" class="grid-input" @bind="employee.Position" placeholder="Position" />
+            },
+
+            // Salary Column (number input with currency)
+            new GridColumn<Employee>
+            {
+                HeaderText = "Salary",
+                Sortable = true,
+                SortExpression = e => e.Salary,
+                DisplayTemplate = employee => @<span>$@employee.Salary.ToString("N0")</span>,
+                EditTemplate = employee => @<input type="number" class="grid-input" @bind="employee.Salary" step="1000" min="0" placeholder="Salary" />
+            },
+
+            // Hire Date Column (date input)
+            new GridColumn<Employee>
+            {
+                HeaderText = "Hire Date",
+                Sortable = true,
+                SortExpression = e => e.HireDate ?? DateTime.MinValue,
+                DisplayTemplate = employee => @<span>@(employee.HireDate?.ToString("yyyy-MM-dd") ?? "N/A")</span>,
+                EditTemplate = employee => @<input type="date" class="grid-input" @bind="employee.HireDate" />
+            },
+
+            // Active Status Column (checkbox)
+            new GridColumn<Employee>
+            {
+                HeaderText = "Active",
+                Sortable = true,
+                SortExpression = e => e.IsActive,
+                DisplayTemplate = employee => @<span class="@(employee.IsActive ? "badge-active" : "badge-inactive")">@(employee.IsActive ? "Yes" : "No")</span>,
+                EditTemplate = employee =>
+                    @<div class="checkbox-container">
+                        <input type="checkbox" class="grid-checkbox" id="active-@employee.Id" @bind="employee.IsActive" />
+                        <label for="active-@employee.Id">Active</label>
+                    </div>
+            },
+
+            // Notes Column (textarea)
+            new GridColumn<Employee>
+            {
+                HeaderText = "Notes",
+                Sortable = false,
+                DisplayTemplate = employee => @<span class="notes-text">@employee.Notes</span>,
+                EditTemplate = employee => @<textarea class="grid-textarea" @bind="employee.Notes" rows="2" placeholder="Enter notes"></textarea>
+            }
+        };
+    }
+
+    private Employee CreateNewEmployee()
+    {
+        return new Employee
+        {
+            Id = nextId++,
+            HireDate = DateTime.Today,
+            IsActive = true
+        };
+    }
+
+    private void HandleItemSaved(Employee employee)
+    {
+        Console.WriteLine($"Employee {employee.Name} saved");
+    }
+
+    private void HandleItemDeleted(Employee employee)
+    {
+        Console.WriteLine($"Employee {employee.Name} deleted");
+    }
+
+    private void HandleItemAdded(Employee employee)
+    {
+        Console.WriteLine($"Employee {employee.Name} added");
+    }
+
+    private Employee CloneEmployee(Employee employee)
+    {
+        return employee.Clone();
+    }
+}
+
+<style>
+    .page-container {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    h1 {
+        color: #333;
+        margin-bottom: 10px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .description {
+        color: #666;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+
+    /* Input Styling */
+    ::deep .grid-input,
+    ::deep .grid-select,
+    ::deep .grid-textarea {
+        width: 100%;
+        padding: 6px 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
+        transition: border-color 0.15s ease-in-out;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    ::deep .grid-input:focus,
+    ::deep .grid-select:focus,
+    ::deep .grid-textarea:focus {
+        outline: none;
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    ::deep .grid-input.readonly {
+        background-color: #e9ecef;
+        cursor: not-allowed;
+    }
+
+    ::deep .grid-checkbox {
+        margin-right: 8px;
+        cursor: pointer;
+        width: 18px;
+        height: 18px;
+    }
+
+    ::deep .checkbox-container {
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+    }
+
+    ::deep .checkbox-container label {
+        cursor: pointer;
+        user-select: none;
+        margin: 0;
+    }
+
+    ::deep .grid-textarea {
+        resize: vertical;
+        min-height: 40px;
+        white-space: normal;
+    }
+
+    ::deep .badge-active {
+        background-color: #28a745;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    ::deep .badge-inactive {
+        background-color: #dc3545;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    ::deep .notes-text {
+        display: block;
+        max-width: 200px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>

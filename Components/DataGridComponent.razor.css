@@ -1,0 +1,215 @@
+/* Grid Container */
+.grid-container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-top: 20px;
+}
+
+/* Table Styles */
+.custom-datagrid {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background-color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    table-layout: fixed;
+}
+
+.custom-datagrid thead {
+    background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+    border-bottom: 2px solid #dee2e6;
+}
+
+.custom-datagrid th {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    border: 1px solid #dee2e6;
+    user-select: none;
+    position: relative;
+}
+
+.custom-datagrid th.sortable {
+    cursor: pointer;
+    padding-right: 35px;
+}
+
+.custom-datagrid th.sortable:hover {
+    background: linear-gradient(to bottom, #e9ecef, #dee2e6);
+}
+
+/* Sort Icon */
+.sort-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+}
+
+.sort-icon::before,
+.sort-icon::after {
+    content: '';
+    position: absolute;
+    left: -5px;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+}
+
+.sort-icon::before {
+    top: -8px;
+    border-bottom: 5px solid #adb5bd;
+}
+
+.sort-icon::after {
+    top: 3px;
+    border-top: 5px solid #adb5bd;
+}
+
+.sort-icon.sort-asc::before {
+    border-bottom-color: #495057;
+}
+
+.sort-icon.sort-desc::after {
+    border-top-color: #495057;
+}
+
+/* Table Data Cells */
+.custom-datagrid td {
+    padding: 12px 15px;
+    border: 1px solid #dee2e6;
+    color: #212529;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.custom-datagrid tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.custom-datagrid tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.custom-datagrid tbody tr.editing {
+    background-color: #fff3cd;
+}
+
+.custom-datagrid tbody tr.new-row {
+    background-color: #d1ecf1;
+}
+
+/* Button Styles */
+.btn {
+    padding: 6px 12px;
+    margin: 0 4px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-edit {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-edit:hover {
+    background-color: #0056b3;
+}
+
+.btn-save {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-save:hover {
+    background-color: #218838;
+}
+
+.btn-cancel {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-cancel:hover {
+    background-color: #5a6268;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
+}
+
+.btn-add {
+    background-color: #17a2b8;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+}
+
+.btn-add:hover {
+    background-color: #138496;
+}
+
+/* Actions Cell */
+.actions-cell {
+    white-space: nowrap;
+    text-align: center;
+}
+
+.actions-header {
+    text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .grid-container {
+        padding: 15px;
+        overflow-x: auto;
+    }
+
+    .custom-datagrid {
+        font-size: 13px;
+    }
+
+    .custom-datagrid th,
+    .custom-datagrid td {
+        padding: 8px 10px;
+    }
+
+    .btn {
+        padding: 4px 8px;
+        font-size: 12px;
+        margin: 0 2px;
+    }
+
+    .btn-add {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+}
