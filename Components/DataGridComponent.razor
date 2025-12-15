@@ -2,6 +2,10 @@
 @using Table.Models
 @using Table.Components
 
+<CascadingValue Value="this">
+    @ChildContent
+</CascadingValue>
+
 <div class="@DataGridStyles.GridContainer">
     <table class="@DataGridStyles.CustomDatagrid">
         <thead>
@@ -85,6 +89,9 @@
 
 @code {
     [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
     public List<TItem> Items { get; set; } = [];
 
     [Parameter]
@@ -118,6 +125,24 @@
     private bool IsSortAscending { get; set; } = true;
     private int? DraggedRowIndex { get; set; }
     private bool AddingNewRow { get; set; }
+    private bool _isInitializing = false;
+
+    protected override void OnInitialized()
+    {
+        if (ChildContent != null && Columns.Count == 0)
+        {
+            _isInitializing = true;
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender && _isInitializing)
+        {
+            _isInitializing = false;
+            StateHasChanged();
+        }
+    }
 
     private bool IsEditing(TItem item)
     {
@@ -331,6 +356,17 @@
             var item = Items[index];
             var value = Convert.ChangeType(index, property.PropertyType);
             property.SetValue(item, value);
+        }
+    }
+
+    public void AddColumn(GridColumn<TItem> column)
+    {
+        Columns.Add(column);
+
+        // Only trigger state change if not initializing (code-behind mode)
+        if (!_isInitializing)
+        {
+            InvokeAsync(StateHasChanged);
         }
     }
 }

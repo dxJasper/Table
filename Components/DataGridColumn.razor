@@ -1,0 +1,39 @@
+@typeparam TItem where TItem : class, new()
+@using System.Linq.Expressions
+
+@code {
+    [CascadingParameter]
+    public DataGridComponent<TItem>? DataGrid { get; set; }
+
+    [Parameter]
+    public string HeaderText { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool Sortable { get; set; } = false;
+
+    [Parameter]
+    public Expression<Func<TItem, object>>? SortExpression { get; set; }
+
+    [Parameter]
+    public RenderFragment<TItem>? DisplayTemplate { get; set; }
+
+    [Parameter]
+    public RenderFragment<TItem>? EditTemplate { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (DataGrid != null)
+        {
+            var column = new Models.GridColumn<TItem>
+            {
+                HeaderText = HeaderText,
+                Sortable = Sortable,
+                SortExpression = SortExpression,
+                DisplayTemplate = DisplayTemplate ?? (item => builder => { }),
+                EditTemplate = EditTemplate ?? DisplayTemplate ?? (item => builder => { })
+            };
+
+            DataGrid.AddColumn(column);
+        }
+    }
+}

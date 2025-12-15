@@ -1,0 +1,166 @@
+@page "/razormarkup"
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode())
+
+@using Table.Components
+@using Table.Models
+
+<PageTitle>Razor Markup</PageTitle>
+
+<h3>Employee Grid - Columns Defined in Razor Markup</h3>
+<p>This page demonstrates defining columns directly in the Razor markup using &lt;DataGridColumn&gt; components.</p>
+
+<DataGridComponent TItem="Employee"
+                   Items="@employees"
+                   CreateNewItem="@CreateNewEmployee"
+                   CloneItem="@CloneEmployee"
+                   OnItemSaved="@HandleItemSaved"
+                   OnItemDeleted="@HandleItemDeleted"
+                   OnItemAdded="@HandleItemAdded"
+                   OrderPropertyName="DisplayOrder"
+                   AllowRowReorder="true">
+
+    <DataGridColumn TItem="Employee"
+                    HeaderText="Name"
+                    Sortable="true"
+                    SortExpression="@(e => e.Name)">
+        <DisplayTemplate>
+            @context.Name
+        </DisplayTemplate>
+        <EditTemplate>
+            <input @bind="context.Name" style="width: 100%;" />
+        </EditTemplate>
+    </DataGridColumn>
+
+    <DataGridColumn TItem="Employee"
+                    HeaderText="Email"
+                    Sortable="true"
+                    SortExpression="@(e => e.Email)">
+        <DisplayTemplate>
+            @context.Email
+        </DisplayTemplate>
+        <EditTemplate>
+            <input @bind="context.Email" type="email" style="width: 100%;" />
+        </EditTemplate>
+    </DataGridColumn>
+
+    <DataGridColumn TItem="Employee"
+                    HeaderText="Age"
+                    Sortable="true"
+                    SortExpression="@(e => e.Age)">
+        <DisplayTemplate>
+            @context.Age
+        </DisplayTemplate>
+        <EditTemplate>
+            <input @bind="context.Age" type="number" style="width: 100%;" />
+        </EditTemplate>
+    </DataGridColumn>
+
+    <DataGridColumn TItem="Employee"
+                    HeaderText="Department"
+                    Sortable="true"
+                    SortExpression="@(e => e.Department)">
+        <DisplayTemplate>
+            @context.Department
+        </DisplayTemplate>
+        <EditTemplate>
+            <input @bind="context.Department" style="width: 100%;" />
+        </EditTemplate>
+    </DataGridColumn>
+
+</DataGridComponent>
+
+@code {
+    private List<Employee> employees = new();
+
+    protected override void OnInitialized()
+    {
+        employees = new List<Employee>
+        {
+            new Employee { Id = 1, DisplayOrder = 0, Name = "John Doe", Email = "john@example.com", Age = 30, Department = "IT" },
+            new Employee { Id = 2, DisplayOrder = 1, Name = "Jane Smith", Email = "jane@example.com", Age = 25, Department = "HR" },
+            new Employee { Id = 3, DisplayOrder = 2, Name = "Bob Johnson", Email = "bob@example.com", Age = 35, Department = "Sales" },
+            new Employee { Id = 4, DisplayOrder = 3, Name = "Alice Williams", Email = "alice@example.com", Age = 28, Department = "IT" },
+            new Employee { Id = 5, DisplayOrder = 4, Name = "Charlie Brown", Email = "charlie@example.com", Age = 32, Department = "Marketing" }
+        };
+    }
+
+    private Employee CreateNewEmployee()
+    {
+        return new Employee();
+    }
+
+    private Employee CloneEmployee(Employee employee)
+    {
+        return employee.Clone();
+    }
+
+    private async Task<ValidationResult> HandleItemSaved(Employee employee)
+    {
+        var errors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(employee.Name))
+        {
+            errors.Add("Name is required");
+        }
+
+        if (string.IsNullOrWhiteSpace(employee.Email))
+        {
+            errors.Add("Email is required");
+        }
+        else if (!employee.Email.Contains("@"))
+        {
+            errors.Add("Email must be valid");
+        }
+
+        if (employee.Age < 18)
+        {
+            errors.Add("Employee must be at least 18 years old");
+        }
+
+        if (errors.Any())
+        {
+            return ValidationResult.Failure(errors);
+        }
+
+        Console.WriteLine($"Employee {employee.Name} saved");
+        return ValidationResult.Success();
+    }
+
+    private async Task<ValidationResult> HandleItemDeleted(Employee employee)
+    {
+        Console.WriteLine($"Employee {employee.Name} deleted");
+        return ValidationResult.Success();
+    }
+
+    private async Task<ValidationResult> HandleItemAdded(Employee employee)
+    {
+        var errors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(employee.Name))
+        {
+            errors.Add("Name is required");
+        }
+
+        if (string.IsNullOrWhiteSpace(employee.Email))
+        {
+            errors.Add("Email is required");
+        }
+        else if (!employee.Email.Contains("@"))
+        {
+            errors.Add("Email must be valid");
+        }
+
+        if (employee.Age < 18)
+        {
+            errors.Add("Employee must be at least 18 years old");
+        }
+
+        if (errors.Any())
+        {
+            return ValidationResult.Failure(errors);
+        }
+
+        Console.WriteLine($"Employee {employee.Name} added");
+        return ValidationResult.Success();
+    }
+}
