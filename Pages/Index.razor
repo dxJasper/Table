@@ -195,19 +195,62 @@
         };
     }
 
-    private void HandleItemSaved(Employee employee)
+    private async Task<ValidationResult> HandleItemSaved(Employee employee)
     {
+        // Example validation
+        var errors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(employee.Name))
+        {
+            errors.Add("Name is required");
+        }
+
+        if (string.IsNullOrWhiteSpace(employee.Email))
+        {
+            errors.Add("Email is required");
+        }
+        else if (!employee.Email.Contains("@"))
+        {
+            errors.Add("Email must be valid");
+        }
+
+        if (employee.Age < 18)
+        {
+            errors.Add("Employee must be at least 18 years old");
+        }
+
+        if (errors.Any())
+        {
+            return ValidationResult.Failure(errors);
+        }
+
         Console.WriteLine($"Employee {employee.Name} saved");
+        return ValidationResult.Success();
     }
 
-    private void HandleItemDeleted(Employee employee)
+    private async Task<ValidationResult> HandleItemDeleted(Employee employee)
     {
         Console.WriteLine($"Employee {employee.Name} deleted");
+        return ValidationResult.Success();
     }
 
-    private void HandleItemAdded(Employee employee)
+    private async Task<ValidationResult> HandleItemAdded(Employee employee)
     {
+        // Example validation
+        var errors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(employee.Name))
+        {
+            errors.Add("Name is required");
+        }
+
+        if (errors.Any())
+        {
+            return ValidationResult.Failure(errors);
+        }
+
         Console.WriteLine($"Employee {employee.Name} added");
+        return ValidationResult.Success();
     }
 
     private Employee CloneEmployee(Employee employee)

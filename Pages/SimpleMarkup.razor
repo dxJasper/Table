@@ -121,19 +121,22 @@
         return employee.Clone();
     }
 
-    private void HandleItemSaved(Employee employee)
+    private async Task<ValidationResult> HandleItemSaved(Employee employee)
     {
         Console.WriteLine($"Employee {employee.Name} saved");
+        return ValidationResult.Success();
     }
 
-    private void HandleItemDeleted(Employee employee)
+    private async Task<ValidationResult> HandleItemDeleted(Employee employee)
     {
         Console.WriteLine($"Employee {employee.Name} deleted");
+        return ValidationResult.Success();
     }
 
-    private void HandleItemAdded(Employee employee)
+    private async Task<ValidationResult> HandleItemAdded(Employee employee)
     {
         Console.WriteLine($"Employee {employee.Name} added");
+        return ValidationResult.Success();
     }
 }
 

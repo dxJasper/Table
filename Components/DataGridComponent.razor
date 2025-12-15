@@ -66,6 +66,19 @@
                         }
                     </td>
                 </tr>
+                @if (IsEditing(item) && ValidationErrors.ContainsKey(item))
+                {
+                    <tr class="validation-row">
+                        <td colspan="@(Columns.Count + 2)" class="validation-cell">
+                            <div class="validation-errors">
+                                @foreach (var error in ValidationErrors[item])
+                                {
+                                    <div class="validation-error">@error</div>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
             }
         </tbody>
     </table>
@@ -87,13 +100,13 @@
     public Func<TItem, TItem>? CloneItem { get; set; }
 
     [Parameter]
-    public EventCallback<TItem> OnItemSaved { get; set; }
+    public Func<TItem, Task<ValidationResult>>? OnItemSaved { get; set; }
 
     [Parameter]
-    public EventCallback<TItem> OnItemDeleted { get; set; }
+    public Func<TItem, Task<ValidationResult>>? OnItemDeleted { get; set; }
 
     [Parameter]
-    public EventCallback<TItem> OnItemAdded { get; set; }
+    public Func<TItem, Task<ValidationResult>>? OnItemAdded { get; set; }
 
     [Parameter]
     public bool AllowRowReorder { get; set; } = true;
@@ -102,6 +115,7 @@
     public string? OrderPropertyName { get; set; }
 
     private TItem? EditingItem { get; set; }
+    private Dictionary<TItem, List<string>> ValidationErrors { get; set; } = new();
     private TItem? OriginalItem { get; set; }
     private string? CurrentSortColumn { get; set; }
     private bool IsSortAscending { get; set; } = true;
@@ -137,15 +151,35 @@
 
     private async Task SaveRow(TItem item)
     {
+        // Clear previous validation errors
+        ValidationErrors.Remove(item);
+
+        ValidationResult? result = null;
+
         if (IsNewItem(item))
         {
-            await OnItemAdded.InvokeAsync(item);
+            if (OnItemAdded != null)
+            {
+                result = await OnItemAdded(item);
+            }
         }
         else
         {
-            await OnItemSaved.InvokeAsync(item);
+            if (OnItemSaved != null)
+            {
+                result = await OnItemSaved(item);
+            }
         }
 
+        // Check validation result
+        if (result != null && !result.IsValid)
+        {
+            ValidationErrors[item] = result.Errors;
+            StateHasChanged();
+            return; // Don't close edit mode if validation failed
+        }
+
+        // Success - clear editing state
         EditingItem = null;
         OriginalItem = null;
     }
@@ -161,14 +195,29 @@
             CopyProperties(OriginalItem, item);
         }
 
+        // Clear validation errors when canceling
+        ValidationErrors.Remove(item);
         EditingItem = null;
         OriginalItem = null;
     }
 
     private async Task DeleteRow(TItem item)
     {
+        ValidationResult? result = null;
+
+        if (OnItemDeleted != null)
+        {
+            result = await OnItemDeleted(item);
+        }
+
+        // Check validation result
+        if (result != null && !result.IsValid)
+        {
+            // For delete, we don't have an edit mode, so just skip the deletion
+            return;
+        }
+
         Items.Remove(item);
-        await OnItemDeleted.InvokeAsync(item);
     }
 
     private void AddNewRow()

@@ -303,6 +303,31 @@
     color: #212529;
 }
 
+/* Validation Errors */
+.validation-row {
+    background-color: #f8d7da;
+}
+
+.validation-cell {
+    padding: 8px !important;
+    border-top: none !important;
+}
+
+.validation-errors {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.validation-error {
+    color: #721c24;
+    font-size: 12px;
+    padding: 4px 8px;
+    background-color: #f5c2c7;
+    border-left: 3px solid #dc3545;
+    border-radius: 2px;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .grid-container {
