@@ -50,37 +50,6 @@
     background: linear-gradient(to bottom, #e9ecef, #dee2e6);
 }
 
-/* Remove vertical borders - optional */
-.custom-datagrid.no-vertical-borders th,
-.custom-datagrid.no-vertical-borders td {
-    border-left: none;
-    border-right: none;
-}
-
-/* Draggable columns */
-.custom-datagrid th.draggable {
-    cursor: move;
-    padding-right: 24px;
-}
-
-.custom-datagrid th.draggable:active {
-    opacity: 0.5;
-}
-
-.drag-handle {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #adb5bd;
-    font-size: 14px;
-    letter-spacing: -2px;
-}
-
-.custom-datagrid th.draggable:hover .drag-handle {
-    color: #495057;
-}
-
 /* Sort Icon */
 .sort-icon {
     position: absolute;

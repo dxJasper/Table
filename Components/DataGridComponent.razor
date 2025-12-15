@@ -1,44 +1,41 @@
 @typeparam TItem where TItem : class, new()
 @using Table.Models
+@using Table.Components
 
-<div class="grid-container">
-    <table class="custom-datagrid">
+<div class="@DataGridStyles.GridContainer">
+    <table class="@DataGridStyles.CustomDatagrid">
         <thead>
             <tr>
-                <th class="row-drag-header @(AllowRowReorder ? "" : "hidden")"></th>
-                @for (int i = 0; i < Columns.Count; i++)
+                <th class="@DataGridStyles.RowDragHeader @(AllowRowReorder ? string.Empty : DataGridStyles.Hidden)"></th>
+                @foreach (var column in Columns)
                 {
-                    var index = i;
-                    var column = Columns[index];
                     var isSortable = !AllowRowReorder && column.Sortable;
-                    <th class="@(isSortable ? "sortable" : "")"
+                    <th class="@(isSortable ? DataGridStyles.Sortable : string.Empty)"
                         @onclick="() => SortByColumn(column)">
                         @column.HeaderText
                         @if (isSortable)
                         {
-                            <span class="sort-icon @GetSortClass(column)"></span>
+                            <span class="@DataGridStyles.SortIcon @GetSortClass(column)"></span>
                         }
                     </th>
                 }
-                <th class="actions-header">Actions</th>
+                <th class="@DataGridStyles.ActionsHeader">Actions</th>
             </tr>
         </thead>
         <tbody>
-            @for (int i = 0; i < Items.Count; i++)
+            @for (var index = 0; index < Items.Count; index++)
             {
-                var rowIndex = i;
+                var rowIndex = index;
                 var item = Items[rowIndex];
-                <tr class="@GetRowClass(item) @(DraggedRowIndex == rowIndex ? "dragging" : "")"
-                    @ondragenter="(e) => OnRowDragEnter(e, rowIndex)"
-                    @ondrop="(e) => OnRowDrop(e, rowIndex)"
-                    @ondragover="(e) => OnRowDragOver(e)"
+                <tr class="@GetRowClass(item) @(DraggedRowIndex == rowIndex ? DataGridStyles.Dragging : string.Empty)"
+                    @ondrop="() => OnRowDrop(rowIndex)"
                     @ondragover:preventDefault
                     @ondrop:preventDefault>
-                    <td class="row-drag-handle @(AllowRowReorder && !IsEditing(item) ? "" : "hidden")"
-                        draggable="@(AllowRowReorder && !IsEditing(item) ? "true" : "false")"
+                    <td class="@DataGridStyles.RowDragHandle @(AllowRowReorder && !IsEditing(item) ? string.Empty : DataGridStyles.Hidden)"
+                        draggable="@(AllowRowReorder && !IsEditing(item))"
                         @ondragstart="(e) => OnRowDragStart(e, rowIndex)"
                         @ondragstart:stopPropagation>
-                        <span class="row-drag-icon">⋮⋮</span>
+                        <span class="@DataGridStyles.RowDragIcon">⋮⋮</span>
                     </td>
                     @foreach (var column in Columns)
                     {
@@ -53,27 +50,27 @@
                             }
                         </td>
                     }
-                    <td class="actions-cell">
+                    <td class="@DataGridStyles.ActionsCell">
                         @if (IsEditing(item))
                         {
-                            <button class="btn btn-save" @onclick="() => SaveRow(item)">Save</button>
-                            <button class="btn btn-cancel" @onclick="() => CancelEdit(item)">Cancel</button>
+                            <button class="@DataGridStyles.Btn @DataGridStyles.BtnSave" @onclick="() => SaveRow(item)">Save</button>
+                            <button class="@DataGridStyles.Btn @DataGridStyles.BtnCancel" @onclick="() => CancelEdit(item)">Cancel</button>
                         }
                         else
                         {
-                            <button class="btn btn-edit" @onclick="() => EditRow(item)">Edit</button>
-                            <button class="btn btn-delete" @onclick="() => DeleteRow(item)">Delete</button>
+                            <button class="@DataGridStyles.Btn @DataGridStyles.BtnEdit" @onclick="() => EditRow(item)">Edit</button>
+                            <button class="@DataGridStyles.Btn @DataGridStyles.BtnDelete" @onclick="() => DeleteRow(item)">Delete</button>
                         }
                     </td>
                 </tr>
-                @if (IsEditing(item) && ValidationErrors.ContainsKey(item))
+                @if (IsEditing(item) && ValidationErrors.TryGetValue(item, out var validationError))
                 {
-                    <tr class="validation-row">
-                        <td colspan="@(Columns.Count + 2)" class="validation-cell">
-                            <div class="validation-errors">
-                                @foreach (var error in ValidationErrors[item])
+                    <tr class="@DataGridStyles.ValidationRow">
+                        <td colspan="@(Columns.Count + 2)" class="@DataGridStyles.ValidationCell">
+                            <div class="@DataGridStyles.ValidationErrors">
+                                @foreach (var error in validationError)
                                 {
-                                    <div class="validation-error">@error</div>
+                                    <div class="@DataGridStyles.ValidationError">@error</div>
                                 }
                             </div>
                         </td>
@@ -83,15 +80,15 @@
         </tbody>
     </table>
 
-    <button class="btn btn-add" @onclick="AddNewRow">Add New Row</button>
+    <button class="@DataGridStyles.Btn @DataGridStyles.BtnAdd" @onclick="AddNewRow">Add New Row</button>
 </div>
 
 @code {
     [Parameter]
-    public List<TItem> Items { get; set; } = new();
+    public List<TItem> Items { get; set; } = [];
 
     [Parameter]
-    public List<GridColumn<TItem>> Columns { get; set; } = new();
+    public List<GridColumn<TItem>> Columns { get; set; } = [];
 
     [Parameter]
     public Func<TItem>? CreateNewItem { get; set; }
@@ -120,6 +117,7 @@
     private string? CurrentSortColumn { get; set; }
     private bool IsSortAscending { get; set; } = true;
     private int? DraggedRowIndex { get; set; }
+    private bool AddingNewRow { get; set; }
 
     private bool IsEditing(TItem item)
     {
@@ -130,9 +128,10 @@
     {
         if (EditingItem == item)
         {
-            return IsNewItem(item) ? "editing new-row" : "editing";
+            return IsNewItem(item) ? $"{DataGridStyles.Editing} {DataGridStyles.NewRow}" : DataGridStyles.Editing;
         }
-        return "data-row";
+
+        return DataGridStyles.DataRow;
     }
 
     private bool IsNewItem(TItem item)
@@ -142,16 +141,22 @@
 
     private void EditRow(TItem item)
     {
+        if (EditingItem != null && EditingItem != item)
+        {
+            CancelEdit(EditingItem);
+        }
+
         if (CloneItem != null)
         {
             OriginalItem = CloneItem(item);
         }
+
         EditingItem = item;
+        AddingNewRow = false;
     }
 
-    private async Task SaveRow(TItem item)
+    private async Task<bool> SaveRow(TItem item)
     {
-        // Clear previous validation errors
         ValidationErrors.Remove(item);
 
         ValidationResult? result = null;
@@ -171,17 +176,18 @@
             }
         }
 
-        // Check validation result
-        if (result != null && !result.IsValid)
+        if (result is { IsValid: false })
         {
             ValidationErrors[item] = result.Errors;
             StateHasChanged();
-            return; // Don't close edit mode if validation failed
+            return false;
         }
 
-        // Success - clear editing state
         EditingItem = null;
         OriginalItem = null;
+        AddingNewRow = false;
+
+        return true;
     }
 
     private void CancelEdit(TItem item)
@@ -195,7 +201,6 @@
             CopyProperties(OriginalItem, item);
         }
 
-        // Clear validation errors when canceling
         ValidationErrors.Remove(item);
         EditingItem = null;
         OriginalItem = null;
@@ -210,28 +215,36 @@
             result = await OnItemDeleted(item);
         }
 
-        // Check validation result
-        if (result != null && !result.IsValid)
+        if (result is { IsValid: false })
         {
-            // For delete, we don't have an edit mode, so just skip the deletion
             return;
         }
 
         Items.Remove(item);
     }
 
-    private void AddNewRow()
+    private async Task AddNewRow()
     {
-        TItem newItem;
+        if (EditingItem != null)
+        {
+            if (IsNewItem(EditingItem))
+            {
+                if (!await SaveRow(EditingItem))
+                {
+                    return;
+                }
+            }
+            else
+            {
+                CancelEdit(EditingItem);    
+            }
+        }
 
-        if (CreateNewItem != null)
-        {
-            newItem = CreateNewItem();
-        }
-        else
-        {
-            newItem = new TItem();
-        }
+        AddingNewRow = true;
+
+        var newItem = CreateNewItem != null 
+            ? CreateNewItem() 
+            : new TItem();
 
         Items.Add(newItem);
         EditingItem = newItem;
@@ -239,8 +252,10 @@
 
     private void SortByColumn(GridColumn<TItem> column)
     {
-        // Disable sorting when row reordering is enabled
-        if (AllowRowReorder || !column.Sortable || column.SortExpression == null) return;
+        if (AllowRowReorder || !column.Sortable || column.SortExpression == null)
+        {
+            return;
+        }
 
         if (CurrentSortColumn == column.HeaderText)
         {
@@ -261,15 +276,16 @@
     {
         if (CurrentSortColumn == column.HeaderText)
         {
-            return IsSortAscending ? "sort-asc" : "sort-desc";
+            return IsSortAscending ? DataGridStyles.SortAsc : DataGridStyles.SortDesc;
         }
+
         return string.Empty;
     }
 
-    private void CopyProperties(TItem source, TItem destination)
+    private static void CopyProperties(TItem source, TItem destination)
     {
         var properties = typeof(TItem).GetProperties()
-            .Where(p => p.CanRead && p.CanWrite);
+            .Where(p => p is { CanRead: true, CanWrite: true });
 
         foreach (var property in properties)
         {
@@ -284,47 +300,36 @@
         e.DataTransfer.EffectAllowed = "move";
     }
 
-    private void OnRowDragEnter(DragEventArgs e, int index)
+    private void OnRowDrop(int targetIndex)
     {
-        e.DataTransfer.DropEffect = "move";
-    }
-
-    private void OnRowDragOver(DragEventArgs e)
-    {
-        e.DataTransfer.DropEffect = "move";
-    }
-
-    private void OnRowDrop(DragEventArgs e, int targetIndex)
-    {
-        e.DataTransfer.DropEffect = "move";
-
         if (DraggedRowIndex.HasValue && DraggedRowIndex.Value != targetIndex)
         {
-            var draggedItem = Items[DraggedRowIndex.Value];
-            Items.RemoveAt(DraggedRowIndex.Value);
+            var sourceIndex = DraggedRowIndex.Value;
+            var draggedItem = Items[sourceIndex];
+            Items.RemoveAt(sourceIndex);
             Items.Insert(targetIndex, draggedItem);
 
-            // Update the order property if specified
-            UpdateOrderProperty();
+            UpdateOrderProperty(sourceIndex, targetIndex);
 
             StateHasChanged();
         }
         DraggedRowIndex = null;
     }
 
-    private void UpdateOrderProperty()
+    private void UpdateOrderProperty(int sourceIndex, int targetIndex)
     {
         if (string.IsNullOrEmpty(OrderPropertyName)) return;
 
         var property = typeof(TItem).GetProperty(OrderPropertyName);
         if (property == null || !property.CanWrite) return;
 
-        // Update order values based on current position in the list
-        for (int i = 0; i < Items.Count; i++)
+        var startIndex = Math.Min(sourceIndex, targetIndex);
+        var endIndex = Math.Max(sourceIndex, targetIndex);
+
+        for (var index = startIndex; index <= endIndex; index++)
         {
-            var item = Items[i];
-            // Try to convert the index to the property type
-            var value = Convert.ChangeType(i, property.PropertyType);
+            var item = Items[index];
+            var value = Convert.ChangeType(index, property.PropertyType);
             property.SetValue(item, value);
         }
     }
