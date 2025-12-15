@@ -256,35 +256,51 @@
 }
 
 /* Row reordering */
-.custom-datagrid tbody tr.draggable-row {
-    cursor: move;
-}
-
-.custom-datagrid tbody tr.draggable-row:active {
-    opacity: 0.5;
+.custom-datagrid tbody tr.dragging {
+    opacity: 0.4;
+    background-color: #e9ecef !important;
 }
 
 .row-drag-handle {
-    width: 1%;
+    width: 30px;
+    min-width: 30px;
+    max-width: 30px;
     text-align: center;
     padding: 6px 4px !important;
-    cursor: move;
+    cursor: grab;
+    background-color: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+    user-select: none;
+}
+
+.row-drag-handle:active {
+    cursor: grabbing;
 }
 
 .row-drag-header {
-    width: 1%;
+    width: 30px;
+    min-width: 30px;
+    max-width: 30px;
     padding: 6px 4px !important;
+    background-color: #f8f9fa;
+    border-right: 1px solid #dee2e6;
 }
 
 .row-drag-icon {
-    color: #adb5bd;
-    font-size: 14px;
-    letter-spacing: -2px;
+    color: #6c757d;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: -3px;
     display: inline-block;
+    user-select: none;
 }
 
 .custom-datagrid tbody tr:hover .row-drag-icon {
     color: #495057;
+}
+
+.row-drag-handle:hover .row-drag-icon {
+    color: #212529;
 }
 
 /* Responsive Design */

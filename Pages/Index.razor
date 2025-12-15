@@ -7,9 +7,6 @@
 <PageTitle>Generic Data Grid Demo</PageTitle>
 
 <div class="page-container">
-    <h1>Generic Data Grid with Custom Field Types</h1>
-    <p class="description">This grid demonstrates various input field types: text, email, number, date, checkbox, select, textarea, and more.</p>
-
     <DataGridComponent TItem="Employee"
               Items="@employees"
               Columns="@columns"
@@ -17,7 +14,10 @@
               CloneItem="@CloneEmployee"
               OnItemSaved="@HandleItemSaved"
               OnItemDeleted="@HandleItemDeleted"
-              OnItemAdded="@HandleItemAdded" />
+              OnItemAdded="@HandleItemAdded"
+              AllowRowReorder="true"
+              OrderPropertyName="DisplayOrder"
+              />
 </div>
 
 @code {
@@ -35,11 +35,36 @@
     {
         employees = new List<Employee>
         {
-            new Employee { Id = 1, Name = "John Doe", Email = "john.doe@company.com", Age = 30, Department = "IT", IsActive = true, HireDate = new DateTime(2020, 1, 15), Salary = 75000, Position = "Developer", Notes = "Senior developer" },
-            new Employee { Id = 2, Name = "Jane Smith", Email = "jane.smith@company.com", Age = 25, Department = "HR", IsActive = true, HireDate = new DateTime(2021, 3, 10), Salary = 60000, Position = "HR Manager", Notes = "Excellent communication" },
-            new Employee { Id = 3, Name = "Bob Johnson", Email = "bob.johnson@company.com", Age = 35, Department = "Finance", IsActive = false, HireDate = new DateTime(2019, 7, 20), Salary = 85000, Position = "Accountant", Notes = "On leave" },
-            new Employee { Id = 4, Name = "Alice Williams", Email = "alice.williams@company.com", Age = 28, Department = "Marketing", IsActive = true, HireDate = new DateTime(2022, 2, 5), Salary = 65000, Position = "Marketing Lead", Notes = "Creative thinker" },
-            new Employee { Id = 5, Name = "Charlie Brown", Email = "charlie.brown@company.com", Age = 42, Department = "IT", IsActive = true, HireDate = new DateTime(2018, 11, 1), Salary = 95000, Position = "Tech Lead", Notes = "Team mentor" }
+            new Employee { Id = 1, DisplayOrder = 0, Name = "John Doe", Email = "john.doe@company.com", Age = 30, Department = "IT", IsActive = true, HireDate = new DateTime(2020, 1, 15), Salary = 75000, Position = "Developer", Notes = "Senior developer" },
+            new Employee { Id = 2, DisplayOrder = 1, Name = "Jane Smith", Email = "jane.smith@company.com", Age = 25, Department = "HR", IsActive = true, HireDate = new DateTime(2021, 3, 10), Salary = 60000, Position = "HR Manager", Notes = "Excellent communication" },
+            new Employee { Id = 3, DisplayOrder = 2, Name = "Bob Johnson", Email = "bob.johnson@company.com", Age = 35, Department = "Finance", IsActive = false, HireDate = new DateTime(2019, 7, 20), Salary = 85000, Position = "Accountant", Notes = "On leave" },
+            new Employee { Id = 4, DisplayOrder = 3, Name = "Alice Williams", Email = "alice.williams@company.com", Age = 28, Department = "Marketing", IsActive = true, HireDate = new DateTime(2022, 2, 5), Salary = 65000, Position = "Marketing Lead", Notes = "Creative thinker" },
+            new Employee { Id = 5, DisplayOrder = 4, Name = "Charlie Brown", Email = "charlie.brown@company.com", Age = 42, Department = "IT", IsActive = true, HireDate = new DateTime(2018, 11, 1), Salary = 95000, Position = "Tech Lead", Notes = "Team mentor" },
+            new Employee { Id = 6, DisplayOrder = 5, Name = "Diana Prince", Email = "diana.prince@company.com", Age = 29, Department = "Sales", IsActive = true, HireDate = new DateTime(2021, 5, 12), Salary = 70000, Position = "Sales Manager", Notes = "Top performer" },
+            new Employee { Id = 7, DisplayOrder = 6, Name = "Edward Norton", Email = "edward.norton@company.com", Age = 38, Department = "IT", IsActive = true, HireDate = new DateTime(2019, 9, 3), Salary = 88000, Position = "Senior Developer", Notes = "Full-stack expert" },
+            new Employee { Id = 8, DisplayOrder = 7, Name = "Fiona Green", Email = "fiona.green@company.com", Age = 26, Department = "Marketing", IsActive = false, HireDate = new DateTime(2022, 8, 18), Salary = 55000, Position = "Marketing Specialist", Notes = "Maternity leave" },
+            new Employee { Id = 9, DisplayOrder = 8, Name = "George Wilson", Email = "george.wilson@company.com", Age = 45, Department = "Finance", IsActive = true, HireDate = new DateTime(2017, 4, 7), Salary = 92000, Position = "Finance Director", Notes = "Budget specialist" },
+            new Employee { Id = 10, DisplayOrder = 9, Name = "Helen Davis", Email = "helen.davis@company.com", Age = 31, Department = "HR", IsActive = true, HireDate = new DateTime(2020, 6, 22), Salary = 63000, Position = "Recruiter", Notes = "Talent acquisition" },
+            new Employee { Id = 11, DisplayOrder = 10, Name = "Ian Miller", Email = "ian.miller@company.com", Age = 33, Department = "IT", IsActive = true, HireDate = new DateTime(2021, 1, 14), Salary = 79000, Position = "DevOps Engineer", Notes = "Cloud infrastructure" },
+            new Employee { Id = 12, DisplayOrder = 11, Name = "Julia Roberts", Email = "julia.roberts@company.com", Age = 27, Department = "Sales", IsActive = true, HireDate = new DateTime(2022, 11, 9), Salary = 58000, Position = "Sales Representative", Notes = "New client focus" },
+            new Employee { Id = 13, DisplayOrder = 12, Name = "Kevin Hart", Email = "kevin.hart@company.com", Age = 40, Department = "Marketing", IsActive = true, HireDate = new DateTime(2018, 12, 5), Salary = 72000, Position = "Brand Manager", Notes = "Social media expert" },
+            new Employee { Id = 14, DisplayOrder = 13, Name = "Laura Thompson", Email = "laura.thompson@company.com", Age = 24, Department = "Finance", IsActive = true, HireDate = new DateTime(2023, 2, 1), Salary = 48000, Position = "Junior Analyst", Notes = "Recent graduate" },
+            new Employee { Id = 15, DisplayOrder = 14, Name = "Michael Jackson", Email = "michael.jackson@company.com", Age = 37, Department = "IT", IsActive = false, HireDate = new DateTime(2019, 3, 15), Salary = 85000, Position = "System Administrator", Notes = "Medical leave" },
+            new Employee { Id = 16, DisplayOrder = 15, Name = "Nancy Drew", Email = "nancy.drew@company.com", Age = 32, Department = "HR", IsActive = true, HireDate = new DateTime(2020, 10, 8), Salary = 67000, Position = "Training Coordinator", Notes = "Employee development" },
+            new Employee { Id = 17, DisplayOrder = 16, Name = "Oscar Wilde", Email = "oscar.wilde@company.com", Age = 44, Department = "Sales", IsActive = true, HireDate = new DateTime(2016, 7, 12), Salary = 95000, Position = "Sales Director", Notes = "Regional leader" },
+            new Employee { Id = 18, DisplayOrder = 17, Name = "Patricia Moore", Email = "patricia.moore@company.com", Age = 36, Department = "Marketing", IsActive = true, HireDate = new DateTime(2019, 5, 20), Salary = 74000, Position = "Content Manager", Notes = "Digital marketing" },
+            new Employee { Id = 19, DisplayOrder = 18, Name = "Quincy Jones", Email = "quincy.jones@company.com", Age = 28, Department = "Finance", IsActive = true, HireDate = new DateTime(2021, 9, 3), Salary = 62000, Position = "Financial Analyst", Notes = "Investment research" },
+            new Employee { Id = 20, DisplayOrder = 19, Name = "Rachel Green", Email = "rachel.green@company.com", Age = 30, Department = "IT", IsActive = true, HireDate = new DateTime(2020, 4, 16), Salary = 76000, Position = "UX Designer", Notes = "User experience focus" },
+            new Employee { Id = 21, DisplayOrder = 20, Name = "Samuel Lee", Email = "samuel.lee@company.com", Age = 41, Department = "HR", IsActive = true, HireDate = new DateTime(2018, 8, 25), Salary = 78000, Position = "Benefits Administrator", Notes = "Employee wellness" },
+            new Employee { Id = 22, DisplayOrder = 21, Name = "Tina Turner", Email = "tina.turner@company.com", Age = 34, Department = "Sales", IsActive = false, HireDate = new DateTime(2019, 11, 7), Salary = 68000, Position = "Account Manager", Notes = "Temporary assignment" },
+            new Employee { Id = 23, DisplayOrder = 22, Name = "Ulysses Grant", Email = "ulysses.grant@company.com", Age = 39, Department = "Marketing", IsActive = true, HireDate = new DateTime(2018, 1, 10), Salary = 81000, Position = "Marketing Director", Notes = "Strategic planning" },
+            new Employee { Id = 24, DisplayOrder = 23, Name = "Victoria Secret", Email = "victoria.secret@company.com", Age = 26, Department = "Finance", IsActive = true, HireDate = new DateTime(2022, 6, 14), Salary = 52000, Position = "Tax Specialist", Notes = "Compliance expert" },
+            new Employee { Id = 25, DisplayOrder = 24, Name = "Walter White", Email = "walter.white@company.com", Age = 43, Department = "IT", IsActive = true, HireDate = new DateTime(2017, 10, 30), Salary = 98000, Position = "Chief Technology Officer", Notes = "Technology vision" },
+            new Employee { Id = 26, DisplayOrder = 25, Name = "Xena Warrior", Email = "xena.warrior@company.com", Age = 33, Department = "HR", IsActive = true, HireDate = new DateTime(2020, 12, 4), Salary = 71000, Position = "Employee Relations", Notes = "Conflict resolution" },
+            new Employee { Id = 27, DisplayOrder = 26, Name = "Yoda Master", Email = "yoda.master@company.com", Age = 35, Department = "Sales", IsActive = true, HireDate = new DateTime(2019, 2, 28), Salary = 83000, Position = "Senior Sales Rep", Notes = "Mentorship role" },
+            new Employee { Id = 28, DisplayOrder = 27, Name = "Zelda Link", Email = "zelda.link@company.com", Age = 29, Department = "Marketing", IsActive = true, HireDate = new DateTime(2021, 7, 11), Salary = 66000, Position = "SEO Specialist", Notes = "Search optimization" },
+            new Employee { Id = 29, DisplayOrder = 28, Name = "Arthur King", Email = "arthur.king@company.com", Age = 46, Department = "Finance", IsActive = true, HireDate = new DateTime(2016, 3, 21), Salary = 105000, Position = "Chief Financial Officer", Notes = "Executive leadership" },
+            new Employee { Id = 30, DisplayOrder = 29, Name = "Beatrice Potter", Email = "beatrice.potter@company.com", Age = 25, Department = "IT", IsActive = true, HireDate = new DateTime(2023, 1, 9), Salary = 54000, Position = "Junior Developer", Notes = "Fresh talent" }
         };
     }
 

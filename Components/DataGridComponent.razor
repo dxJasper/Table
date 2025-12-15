@@ -28,12 +28,16 @@
             {
                 var rowIndex = i;
                 var item = Items[rowIndex];
-                <tr class="@GetRowClass(item) @(AllowRowReorder ? "draggable-row" : "")"
-                    draggable="@(AllowRowReorder)"
-                    @ondragstart="() => OnRowDragStart(rowIndex)"
-                    @ondrop="() => OnRowDrop(rowIndex)"
-                    @ondragover:preventDefault>
-                    <td class="row-drag-handle @(AllowRowReorder && !IsEditing(item) ? "" : "hidden")">
+                <tr class="@GetRowClass(item) @(DraggedRowIndex == rowIndex ? "dragging" : "")"
+                    @ondragenter="(e) => OnRowDragEnter(e, rowIndex)"
+                    @ondrop="(e) => OnRowDrop(e, rowIndex)"
+                    @ondragover="(e) => OnRowDragOver(e)"
+                    @ondragover:preventDefault
+                    @ondrop:preventDefault>
+                    <td class="row-drag-handle @(AllowRowReorder && !IsEditing(item) ? "" : "hidden")"
+                        draggable="@(AllowRowReorder && !IsEditing(item) ? "true" : "false")"
+                        @ondragstart="(e) => OnRowDragStart(e, rowIndex)"
+                        @ondragstart:stopPropagation>
                         <span class="row-drag-icon">⋮⋮</span>
                     </td>
                     @foreach (var column in Columns)
@@ -94,11 +98,13 @@
     [Parameter]
     public bool AllowRowReorder { get; set; } = true;
 
+    [Parameter]
+    public string? OrderPropertyName { get; set; }
+
     private TItem? EditingItem { get; set; }
     private TItem? OriginalItem { get; set; }
     private string? CurrentSortColumn { get; set; }
     private bool IsSortAscending { get; set; } = true;
-    private int? DraggedColumnIndex { get; set; }
     private int? DraggedRowIndex { get; set; }
 
     private bool IsEditing(TItem item)
@@ -223,42 +229,54 @@
         }
     }
 
-    private void OnDragStart(int index)
-    {
-        DraggedColumnIndex = index;
-    }
-
-    private void OnDrop(int targetIndex)
-    {
-        if (DraggedColumnIndex.HasValue && DraggedColumnIndex.Value != targetIndex)
-        {
-            var draggedColumn = Columns[DraggedColumnIndex.Value];
-            Columns.RemoveAt(DraggedColumnIndex.Value);
-            Columns.Insert(targetIndex, draggedColumn);
-            StateHasChanged();
-        }
-        DraggedColumnIndex = null;
-    }
-
-    private void OnRowDragStart(int index)
+    private void OnRowDragStart(DragEventArgs e, int index)
     {
         DraggedRowIndex = index;
+        e.DataTransfer.EffectAllowed = "move";
     }
 
-    private void OnRowDrop(int targetIndex)
+    private void OnRowDragEnter(DragEventArgs e, int index)
     {
+        e.DataTransfer.DropEffect = "move";
+    }
+
+    private void OnRowDragOver(DragEventArgs e)
+    {
+        e.DataTransfer.DropEffect = "move";
+    }
+
+    private void OnRowDrop(DragEventArgs e, int targetIndex)
+    {
+        e.DataTransfer.DropEffect = "move";
+
         if (DraggedRowIndex.HasValue && DraggedRowIndex.Value != targetIndex)
         {
             var draggedItem = Items[DraggedRowIndex.Value];
             Items.RemoveAt(DraggedRowIndex.Value);
             Items.Insert(targetIndex, draggedItem);
+
+            // Update the order property if specified
+            UpdateOrderProperty();
+
             StateHasChanged();
         }
         DraggedRowIndex = null;
     }
 
-    private bool HasAnySortableColumn()
+    private void UpdateOrderProperty()
     {
-        return Columns.Any(c => c.Sortable);
+        if (string.IsNullOrEmpty(OrderPropertyName)) return;
+
+        var property = typeof(TItem).GetProperty(OrderPropertyName);
+        if (property == null || !property.CanWrite) return;
+
+        // Update order values based on current position in the list
+        for (int i = 0; i < Items.Count; i++)
+        {
+            var item = Items[i];
+            // Try to convert the index to the property type
+            var value = Convert.ChangeType(i, property.PropertyType);
+            property.SetValue(item, value);
+        }
     }
 }
