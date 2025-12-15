@@ -13,23 +13,5 @@ namespace Table.Models
         public decimal Salary { get; set; }
         public string Position { get; set; } = string.Empty;
         public string Notes { get; set; } = string.Empty;
-
-        public Employee Clone()
-        {
-            return new Employee
-            {
-                Id = this.Id,
-                DisplayOrder = this.DisplayOrder,
-                Name = this.Name,
-                Email = this.Email,
-                Age = this.Age,
-                Department = this.Department,
-                IsActive = this.IsActive,
-                HireDate = this.HireDate,
-                Salary = this.Salary,
-                Position = this.Position,
-                Notes = this.Notes
-            };
-        }
     }
 }

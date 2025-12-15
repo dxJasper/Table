@@ -11,7 +11,6 @@
               Items="@employees"
               Columns="@columns"
               CreateNewItem="@CreateNewEmployee"
-              CloneItem="@CloneEmployee"
               OnItemSaved="@HandleItemSaved"
               OnItemDeleted="@HandleItemDeleted"
               OnItemAdded="@HandleItemAdded"
@@ -252,11 +251,6 @@
 
         Console.WriteLine($"Employee {employee.Name} added");
         return ValidationResult.Success();
-    }
-
-    private Employee CloneEmployee(Employee employee)
-    {
-        return employee.Clone();
     }
 }
 

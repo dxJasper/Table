@@ -101,9 +101,6 @@
     public Func<TItem>? CreateNewItem { get; set; }
 
     [Parameter]
-    public Func<TItem, TItem>? CloneItem { get; set; }
-
-    [Parameter]
     public Func<TItem, Task<ValidationResult>>? OnItemSaved { get; set; }
 
     [Parameter]
@@ -171,10 +168,8 @@
             CancelEdit(EditingItem);
         }
 
-        if (CloneItem != null)
-        {
-            OriginalItem = CloneItem(item);
-        }
+        // Clone the item using reflection
+        OriginalItem = CloneItemReflection(item);
 
         EditingItem = item;
         AddingNewRow = false;
@@ -317,6 +312,13 @@
             var value = property.GetValue(source);
             property.SetValue(destination, value);
         }
+    }
+
+    private static TItem CloneItemReflection(TItem source)
+    {
+        var clone = new TItem();
+        CopyProperties(source, clone);
+        return clone;
     }
 
     private void OnRowDragStart(DragEventArgs e, int index)

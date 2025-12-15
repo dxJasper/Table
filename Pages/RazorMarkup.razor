@@ -12,7 +12,6 @@
 <DataGridComponent TItem="Employee"
                    Items="@employees"
                    CreateNewItem="@CreateNewEmployee"
-                   CloneItem="@CloneEmployee"
                    OnItemSaved="@HandleItemSaved"
                    OnItemDeleted="@HandleItemDeleted"
                    OnItemAdded="@HandleItemAdded"
@@ -87,11 +86,6 @@
     private Employee CreateNewEmployee()
     {
         return new Employee();
-    }
-
-    private Employee CloneEmployee(Employee employee)
-    {
-        return employee.Clone();
     }
 
     private async Task<ValidationResult> HandleItemSaved(Employee employee)

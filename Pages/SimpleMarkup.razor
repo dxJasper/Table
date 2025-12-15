@@ -13,10 +13,9 @@
                        Items="@employees"
                        Columns="@columns"
                        CreateNewItem="@CreateNewEmployee"
-                       CloneItem="@CloneEmployee"
                        OnItemSaved="@HandleItemSaved"
                        OnItemDeleted="@HandleItemDeleted"
-                       OnItemAdded="@HandleItemAdded" 
+                       OnItemAdded="@HandleItemAdded"
                        AllowRowReorder="true"/>
 </div>
 
@@ -114,11 +113,6 @@
             Id = nextId++,
             IsActive = true
         };
-    }
-
-    private Employee CloneEmployee(Employee employee)
-    {
-        return employee.Clone();
     }
 
     private async Task<ValidationResult> HandleItemSaved(Employee employee)
