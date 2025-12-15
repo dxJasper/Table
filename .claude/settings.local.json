@@ -3,7 +3,11 @@
     "allow": [
       "Bash(dotnet build:*)",
       "Bash(dotnet --version:*)",
-      "Bash(dotnet clean:*)"
+      "Bash(dotnet clean:*)",
+      "Bash(taskkill:*)",
+      "Bash(dotnet run)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

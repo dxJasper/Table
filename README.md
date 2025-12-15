@@ -7,8 +7,13 @@ A fully generic, customizable Blazor data grid component for .NET 10 with suppor
 ✅ **Generic** - Works with any data type using `TItem`
 ✅ **Custom Field Types** - Text, email, number, date, checkbox, select, textarea, and more
 ✅ **Sortable Columns** - Click headers to sort ascending/descending
+✅ **Draggable Columns** - Reorder non-sortable columns by dragging
+✅ **Draggable Rows** - Reorder rows when grid is not sortable
 ✅ **Inline Editing** - Edit rows with custom input controls
 ✅ **CRUD Operations** - Add, edit, delete, and cancel
+✅ **Compact Design** - Optimized for displaying large amounts of data
+✅ **Fixed Width Cells** - Components never exceed cell boundaries
+✅ **Optional Vertical Borders** - Clean, minimal styling
 ✅ **Separate Files** - Component (.razor), code (.cs), and CSS (.css) properly separated
 ✅ **Type Safe** - Full C# type safety with `RenderFragment<TItem>`
 
@@ -36,18 +41,63 @@ Table/
 
 ## Component Usage
 
-### Basic Example
+There are **two ways** to use the data grid:
+
+### 1. Markup-Based Approach (Recommended)
+
+Define columns directly in the view without code-behind:
+
+```razor
+<DataGrid TItem="Employee"
+          Items="@employees"
+          CreateNewItem="@CreateNewEmployee"
+          CloneItem="@CloneEmployee">
+    <Columns>
+        <DataGridColumn TItem="Employee"
+                        HeaderText="Name"
+                        Sortable="true"
+                        SortBy="@(e => e.Name)">
+            <DisplayTemplate>
+                <span>@context.Name</span>
+            </DisplayTemplate>
+            <EditTemplate>
+                <input type="text" @bind="context.Name" />
+            </EditTemplate>
+        </DataGridColumn>
+
+        <DataGridColumn TItem="Employee"
+                        HeaderText="Department"
+                        Sortable="true"
+                        SortBy="@(e => e.Department)">
+            <DisplayTemplate>
+                <span>@context.Department</span>
+            </DisplayTemplate>
+            <EditTemplate>
+                <select @bind="context.Department">
+                    <option value="IT">IT</option>
+                    <option value="HR">HR</option>
+                </select>
+            </EditTemplate>
+        </DataGridColumn>
+    </Columns>
+</DataGrid>
+```
+
+See `Pages/MarkupExample.razor` for a complete example.
+
+### 2. Code-Behind Approach
+
+Define columns programmatically in the code section:
 
 ```razor
 <DataGridComponent TItem="Employee"
                    Items="@employees"
                    Columns="@columns"
                    CreateNewItem="@CreateNewEmployee"
-                   CloneItem="@CloneEmployee"
-                   OnItemSaved="@HandleItemSaved"
-                   OnItemDeleted="@HandleItemDeleted"
-                   OnItemAdded="@HandleItemAdded" />
+                   CloneItem="@CloneEmployee" />
 ```
+
+See `Pages/Index.razor` for a complete example.
 
 ### Defining Columns
 

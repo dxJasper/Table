@@ -1,20 +1,28 @@
 /* Grid Container */
 .grid-container {
     background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    margin-top: 20px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 12px;
+    margin-top: 12px;
+}
+
+/* Hidden element - reserves space but invisible */
+.hidden {
+    visibility: hidden;
+    width: 0;
+    padding: 0 !important;
 }
 
 /* Table Styles */
 .custom-datagrid {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
     background-color: #fff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     table-layout: fixed;
+    font-size: 13px;
 }
 
 .custom-datagrid thead {
@@ -23,22 +31,54 @@
 }
 
 .custom-datagrid th {
-    padding: 12px 15px;
+    padding: 6px 8px;
     text-align: left;
     font-weight: 600;
     color: #495057;
-    border: 1px solid #dee2e6;
+    border-top: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
     user-select: none;
     position: relative;
 }
 
 .custom-datagrid th.sortable {
     cursor: pointer;
-    padding-right: 35px;
+    padding-right: 24px;
 }
 
 .custom-datagrid th.sortable:hover {
     background: linear-gradient(to bottom, #e9ecef, #dee2e6);
+}
+
+/* Remove vertical borders - optional */
+.custom-datagrid.no-vertical-borders th,
+.custom-datagrid.no-vertical-borders td {
+    border-left: none;
+    border-right: none;
+}
+
+/* Draggable columns */
+.custom-datagrid th.draggable {
+    cursor: move;
+    padding-right: 24px;
+}
+
+.custom-datagrid th.draggable:active {
+    opacity: 0.5;
+}
+
+.drag-handle {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #adb5bd;
+    font-size: 14px;
+    letter-spacing: -2px;
+}
+
+.custom-datagrid th.draggable:hover .drag-handle {
+    color: #495057;
 }
 
 /* Sort Icon */
@@ -82,12 +122,23 @@
 
 /* Table Data Cells */
 .custom-datagrid td {
-    padding: 12px 15px;
-    border: 1px solid #dee2e6;
+    padding: 6px 8px;
+    border-top: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
     color: #212529;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* Actions cell should NOT have ellipsis - always show buttons */
+.custom-datagrid td.actions-cell {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: nowrap;
+    width: 150px;
+    min-width: 150px;
+    max-width: 150px;
 }
 
 .custom-datagrid tbody tr {
@@ -108,14 +159,14 @@
 
 /* Button Styles */
 .btn {
-    padding: 6px 12px;
-    margin: 0 4px;
+    padding: 4px 8px;
+    margin: 0 2px;
     border: none;
-    border-radius: 4px;
-    font-size: 14px;
+    border-radius: 3px;
+    font-size: 12px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     outline: none;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
@@ -168,8 +219,8 @@
 .btn-add {
     background-color: #17a2b8;
     color: white;
-    padding: 10px 20px;
-    font-size: 16px;
+    padding: 6px 12px;
+    font-size: 13px;
 }
 
 .btn-add:hover {
@@ -180,36 +231,86 @@
 .actions-cell {
     white-space: nowrap;
     text-align: center;
+    width: 150px;
+    min-width: 150px;
+    max-width: 150px;
 }
 
 .actions-header {
     text-align: center;
+    width: 150px;
+    min-width: 150px;
+    max-width: 150px;
+}
+
+/* Ensure child components don't exceed cell width */
+.custom-datagrid td > * {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.custom-datagrid td input,
+.custom-datagrid td select,
+.custom-datagrid td textarea {
+    max-width: 100%;
+}
+
+/* Row reordering */
+.custom-datagrid tbody tr.draggable-row {
+    cursor: move;
+}
+
+.custom-datagrid tbody tr.draggable-row:active {
+    opacity: 0.5;
+}
+
+.row-drag-handle {
+    width: 1%;
+    text-align: center;
+    padding: 6px 4px !important;
+    cursor: move;
+}
+
+.row-drag-header {
+    width: 1%;
+    padding: 6px 4px !important;
+}
+
+.row-drag-icon {
+    color: #adb5bd;
+    font-size: 14px;
+    letter-spacing: -2px;
+    display: inline-block;
+}
+
+.custom-datagrid tbody tr:hover .row-drag-icon {
+    color: #495057;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
     .grid-container {
-        padding: 15px;
+        padding: 8px;
         overflow-x: auto;
     }
 
     .custom-datagrid {
-        font-size: 13px;
+        font-size: 12px;
     }
 
     .custom-datagrid th,
     .custom-datagrid td {
-        padding: 8px 10px;
+        padding: 4px 6px;
     }
 
     .btn {
-        padding: 4px 8px;
-        font-size: 12px;
-        margin: 0 2px;
+        padding: 3px 6px;
+        font-size: 11px;
+        margin: 0 1px;
     }
 
     .btn-add {
-        padding: 8px 16px;
-        font-size: 14px;
+        padding: 5px 10px;
+        font-size: 12px;
     }
 }

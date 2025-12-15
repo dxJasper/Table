@@ -5,12 +5,16 @@
     <table class="custom-datagrid">
         <thead>
             <tr>
-                @foreach (var column in Columns)
+                <th class="row-drag-header @(AllowRowReorder ? "" : "hidden")"></th>
+                @for (int i = 0; i < Columns.Count; i++)
                 {
-                    <th class="@(column.Sortable ? "sortable" : "")"
+                    var index = i;
+                    var column = Columns[index];
+                    var isSortable = !AllowRowReorder && column.Sortable;
+                    <th class="@(isSortable ? "sortable" : "")"
                         @onclick="() => SortByColumn(column)">
                         @column.HeaderText
-                        @if (column.Sortable)
+                        @if (isSortable)
                         {
                             <span class="sort-icon @GetSortClass(column)"></span>
                         }
@@ -20,9 +24,18 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Items)
+            @for (int i = 0; i < Items.Count; i++)
             {
-                <tr class="@GetRowClass(item)">
+                var rowIndex = i;
+                var item = Items[rowIndex];
+                <tr class="@GetRowClass(item) @(AllowRowReorder ? "draggable-row" : "")"
+                    draggable="@(AllowRowReorder)"
+                    @ondragstart="() => OnRowDragStart(rowIndex)"
+                    @ondrop="() => OnRowDrop(rowIndex)"
+                    @ondragover:preventDefault>
+                    <td class="row-drag-handle @(AllowRowReorder && !IsEditing(item) ? "" : "hidden")">
+                        <span class="row-drag-icon">⋮⋮</span>
+                    </td>
                     @foreach (var column in Columns)
                     {
                         <td>
@@ -78,10 +91,15 @@
     [Parameter]
     public EventCallback<TItem> OnItemAdded { get; set; }
 
+    [Parameter]
+    public bool AllowRowReorder { get; set; } = true;
+
     private TItem? EditingItem { get; set; }
     private TItem? OriginalItem { get; set; }
     private string? CurrentSortColumn { get; set; }
     private bool IsSortAscending { get; set; } = true;
+    private int? DraggedColumnIndex { get; set; }
+    private int? DraggedRowIndex { get; set; }
 
     private bool IsEditing(TItem item)
     {
@@ -166,7 +184,8 @@
 
     private void SortByColumn(GridColumn<TItem> column)
     {
-        if (!column.Sortable || column.SortExpression == null) return;
+        // Disable sorting when row reordering is enabled
+        if (AllowRowReorder || !column.Sortable || column.SortExpression == null) return;
 
         if (CurrentSortColumn == column.HeaderText)
         {
@@ -202,5 +221,44 @@
             var value = property.GetValue(source);
             property.SetValue(destination, value);
         }
+    }
+
+    private void OnDragStart(int index)
+    {
+        DraggedColumnIndex = index;
+    }
+
+    private void OnDrop(int targetIndex)
+    {
+        if (DraggedColumnIndex.HasValue && DraggedColumnIndex.Value != targetIndex)
+        {
+            var draggedColumn = Columns[DraggedColumnIndex.Value];
+            Columns.RemoveAt(DraggedColumnIndex.Value);
+            Columns.Insert(targetIndex, draggedColumn);
+            StateHasChanged();
+        }
+        DraggedColumnIndex = null;
+    }
+
+    private void OnRowDragStart(int index)
+    {
+        DraggedRowIndex = index;
+    }
+
+    private void OnRowDrop(int targetIndex)
+    {
+        if (DraggedRowIndex.HasValue && DraggedRowIndex.Value != targetIndex)
+        {
+            var draggedItem = Items[DraggedRowIndex.Value];
+            Items.RemoveAt(DraggedRowIndex.Value);
+            Items.Insert(targetIndex, draggedItem);
+            StateHasChanged();
+        }
+        DraggedRowIndex = null;
+    }
+
+    private bool HasAnySortableColumn()
+    {
+        return Columns.Any(c => c.Sortable);
     }
 }

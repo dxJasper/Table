@@ -1,0 +1,227 @@
+@page "/simple"
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode())
+@using Table.Components
+@using Table.Models
+
+<PageTitle>Simple Markup Grid</PageTitle>
+
+<div class="page-container">
+    <h1>Simple Markup-Based Data Grid</h1>
+    <p class="description">Define columns with inline templates!</p>
+
+    <DataGridComponent TItem="Employee"
+                       Items="@employees"
+                       Columns="@columns"
+                       CreateNewItem="@CreateNewEmployee"
+                       CloneItem="@CloneEmployee"
+                       OnItemSaved="@HandleItemSaved"
+                       OnItemDeleted="@HandleItemDeleted"
+                       OnItemAdded="@HandleItemAdded" 
+                       AllowRowReorder="true"/>
+</div>
+
+@code {
+    private List<Employee> employees = new();
+    private List<GridColumn<Employee>> columns = new();
+    private int nextId = 6;
+
+    protected override void OnInitialized()
+    {
+        LoadSampleData();
+        ConfigureColumns();
+    }
+
+    private void LoadSampleData()
+    {
+        employees = new List<Employee>
+        {
+            new Employee { Id = 1, Name = "John Doe", Email = "john.doe@company.com", Age = 30, Department = "IT", IsActive = true, Salary = 75000 },
+            new Employee { Id = 2, Name = "Jane Smith", Email = "jane.smith@company.com", Age = 25, Department = "HR", IsActive = true, Salary = 60000 },
+            new Employee { Id = 3, Name = "Bob Johnson", Email = "bob.johnson@company.com", Age = 35, Department = "Finance", IsActive = false, Salary = 85000 }
+        };
+    }
+
+    private void ConfigureColumns()
+    {
+        columns = new List<GridColumn<Employee>>
+        {
+            // ID Column
+            new GridColumn<Employee>
+            {
+                HeaderText = "ID",
+                Sortable = true,
+                SortExpression = e => e.Id,
+                DisplayTemplate = employee => @<span>@employee.Id</span>,
+                EditTemplate = employee => @<input type="text" class="grid-input readonly" value="@employee.Id" readonly />
+            },
+
+            // Name with custom component
+            new GridColumn<Employee>
+            {
+                HeaderText = "Name",
+                Sortable = true,
+                SortExpression = e => e.Name,
+                DisplayTemplate = employee => @<strong style="color: #007bff;">@employee.Name</strong>,
+                EditTemplate = employee => @<input type="text" class="grid-input" @bind="employee.Name" placeholder="Enter name" />
+            },
+
+            // Email
+            new GridColumn<Employee>
+            {
+                HeaderText = "Email",
+                Sortable = true,
+                SortExpression = e => e.Email,
+                DisplayTemplate = employee => @<a href="mailto:@employee.Email">@employee.Email</a>,
+                EditTemplate = employee => @<input type="email" class="grid-input" @bind="employee.Email" placeholder="Enter email" />
+            },
+
+            // Department with dropdown
+            new GridColumn<Employee>
+            {
+                HeaderText = "Department",
+                Sortable = true,
+                SortExpression = e => e.Department,
+                DisplayTemplate = employee => @<span class="badge-dept">@employee.Department</span>,
+                EditTemplate = employee =>
+                    @<select class="grid-select" @bind="employee.Department">
+                        <option value="">Select...</option>
+                        <option value="IT">IT</option>
+                        <option value="HR">HR</option>
+                        <option value="Finance">Finance</option>
+                    </select>
+            },
+
+            // Active status
+            new GridColumn<Employee>
+            {
+                HeaderText = "Active",
+                Sortable = true,
+                SortExpression = e => e.IsActive,
+                DisplayTemplate = employee => @<span class="@(employee.IsActive ? "badge-active" : "badge-inactive")">@(employee.IsActive ? "✓ Active" : "✗ Inactive")</span>,
+                EditTemplate = employee =>
+                    @<div class="checkbox-container">
+                        <input type="checkbox" class="grid-checkbox" @bind="employee.IsActive" />
+                        <label>Active</label>
+                    </div>
+            }
+        };
+    }
+
+    private Employee CreateNewEmployee()
+    {
+        return new Employee
+        {
+            Id = nextId++,
+            IsActive = true
+        };
+    }
+
+    private Employee CloneEmployee(Employee employee)
+    {
+        return employee.Clone();
+    }
+
+    private void HandleItemSaved(Employee employee)
+    {
+        Console.WriteLine($"Employee {employee.Name} saved");
+    }
+
+    private void HandleItemDeleted(Employee employee)
+    {
+        Console.WriteLine($"Employee {employee.Name} deleted");
+    }
+
+    private void HandleItemAdded(Employee employee)
+    {
+        Console.WriteLine($"Employee {employee.Name} added");
+    }
+}
+
+<style>
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    h1 {
+        color: #333;
+        margin-bottom: 10px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .description {
+        color: #666;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+
+    ::deep .grid-input,
+    ::deep .grid-select {
+        width: 100%;
+        padding: 6px 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
+        transition: border-color 0.15s ease-in-out;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    ::deep .grid-input:focus,
+    ::deep .grid-select:focus {
+        outline: none;
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    ::deep .grid-input.readonly {
+        background-color: #e9ecef;
+        cursor: not-allowed;
+    }
+
+    ::deep .grid-checkbox {
+        margin-right: 8px;
+        cursor: pointer;
+    }
+
+    ::deep .checkbox-container {
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+    }
+
+    ::deep .checkbox-container label {
+        cursor: pointer;
+        user-select: none;
+        margin: 0;
+    }
+
+    ::deep .badge-active {
+        background-color: #28a745;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    ::deep .badge-inactive {
+        background-color: #dc3545;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    ::deep .badge-dept {
+        background-color: #6c757d;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+</style>
