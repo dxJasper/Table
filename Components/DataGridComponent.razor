@@ -10,7 +10,7 @@
     <table class="@DataGridStyles.CustomDatagrid">
         <thead>
             <tr>
-                <th class="@DataGridStyles.RowDragHeader @(AllowRowReorder ? string.Empty : DataGridStyles.Hidden)"></th>
+                <th class="@DataGridStyles.RowDragHeader @(AllowRowReorder && !ReadOnly ? string.Empty : DataGridStyles.Hidden)"></th>
                 @foreach (var column in Columns)
                 {
                     var isSortable = !AllowRowReorder && column.Sortable;
@@ -23,7 +23,10 @@
                         }
                     </th>
                 }
-                <th class="@DataGridStyles.ActionsHeader">Actions</th>
+                @if (!ReadOnly)
+                {
+                    <th class="@DataGridStyles.ActionsHeader">Actions</th>
+                }
             </tr>
         </thead>
         <tbody>
@@ -35,8 +38,8 @@
                     @ondrop="() => OnRowDrop(rowIndex)"
                     @ondragover:preventDefault
                     @ondrop:preventDefault>
-                    <td class="@DataGridStyles.RowDragHandle @(AllowRowReorder && !IsEditing(item) ? string.Empty : DataGridStyles.Hidden)"
-                        draggable="@(AllowRowReorder && !IsEditing(item))"
+                    <td class="@DataGridStyles.RowDragHandle @(AllowRowReorder && !ReadOnly && !IsEditing(item) ? string.Empty : DataGridStyles.Hidden)"
+                        draggable="@(AllowRowReorder && !ReadOnly && !IsEditing(item))"
                         @ondragstart="(e) => OnRowDragStart(e, rowIndex)"
                         @ondragstart:stopPropagation>
                         <span class="@DataGridStyles.RowDragIcon">⋮⋮</span>
@@ -54,18 +57,21 @@
                             }
                         </td>
                     }
-                    <td class="@DataGridStyles.ActionsCell">
-                        @if (IsEditing(item))
-                        {
-                            <button class="@DataGridStyles.Btn @DataGridStyles.BtnSave" @onclick="() => SaveRow(item)">Save</button>
-                            <button class="@DataGridStyles.Btn @DataGridStyles.BtnCancel" @onclick="() => CancelEdit(item)">Cancel</button>
-                        }
-                        else
-                        {
-                            <button class="@DataGridStyles.Btn @DataGridStyles.BtnEdit" @onclick="() => EditRow(item)">Edit</button>
-                            <button class="@DataGridStyles.Btn @DataGridStyles.BtnDelete" @onclick="() => DeleteRow(item)">Delete</button>
-                        }
-                    </td>
+                    @if (!ReadOnly)
+                    {
+                        <td class="@DataGridStyles.ActionsCell">
+                            @if (IsEditing(item))
+                            {
+                                <button class="@DataGridStyles.Btn @DataGridStyles.BtnSave" @onclick="() => SaveRow(item)">Save</button>
+                                <button class="@DataGridStyles.Btn @DataGridStyles.BtnCancel" @onclick="() => CancelEdit(item)">Cancel</button>
+                            }
+                            else
+                            {
+                                <button class="@DataGridStyles.Btn @DataGridStyles.BtnEdit" @onclick="() => EditRow(item)">Edit</button>
+                                <button class="@DataGridStyles.Btn @DataGridStyles.BtnDelete" @onclick="() => DeleteRow(item)">Delete</button>
+                            }
+                        </td>
+                    }
                 </tr>
                 @if (IsEditing(item) && ValidationErrors.TryGetValue(item, out var validationError))
                 {
@@ -84,7 +90,10 @@
         </tbody>
     </table>
 
-    <button class="@DataGridStyles.Btn @DataGridStyles.BtnAdd" @onclick="AddNewRow">Add New Row</button>
+    @if (!ReadOnly)
+    {
+        <button class="@DataGridStyles.Btn @DataGridStyles.BtnAdd" @onclick="AddNewRow">Add New Row</button>
+    }
 </div>
 
 @code {
@@ -114,6 +123,9 @@
 
     [Parameter]
     public string? OrderPropertyName { get; set; }
+
+    [Parameter]
+    public bool ReadOnly { get; set; } = false;
 
     private TItem? EditingItem { get; set; }
     private Dictionary<TItem, List<string>> ValidationErrors { get; set; } = new();

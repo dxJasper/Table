@@ -9,6 +9,11 @@
     <h1>Simple Markup-Based Data Grid</h1>
     <p class="description">Define columns with inline templates!</p>
 
+    <label class="readonly-toggle">
+        <input type="checkbox" @bind="isReadOnly" />
+        Read-Only Mode
+    </label>
+
     <DataGridComponent TItem="Employee"
                        Items="@employees"
                        Columns="@columns"
@@ -16,13 +21,15 @@
                        OnItemSaved="@HandleItemSaved"
                        OnItemDeleted="@HandleItemDeleted"
                        OnItemAdded="@HandleItemAdded"
-                       AllowRowReorder="true"/>
+                       AllowRowReorder="true"
+                       ReadOnly="@isReadOnly"/>
 </div>
 
 @code {
     private List<Employee> employees = new();
     private List<GridColumn<Employee>> columns = new();
     private int nextId = 6;
+    private bool isReadOnly = false;
 
     protected override void OnInitialized()
     {
@@ -220,5 +227,32 @@
         padding: 4px 10px;
         border-radius: 4px;
         font-size: 12px;
+    }
+
+    .readonly-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+        padding: 10px 16px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        color: #495057;
+        user-select: none;
+    }
+
+    .readonly-toggle input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    .readonly-toggle:hover {
+        background-color: #e9ecef;
+        border-color: #ced4da;
     }
 </style>
