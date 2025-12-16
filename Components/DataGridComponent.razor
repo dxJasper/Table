@@ -1,6 +1,8 @@
 @typeparam TItem where TItem : class, new()
+@using System.Reflection
 @using Table.Models
 @using Table.Components
+@implements IDisposable
 
 <CascadingValue Value="this">
     @ChildContent
@@ -102,6 +104,14 @@
     private int? DraggedRowIndex { get; set; }
     private bool AddingNewRow { get; set; }
     private bool _isInitializing = false;
+
+    // Cache reflection results for performance
+    private static readonly Dictionary<Type, PropertyInfo[]> _propertyCache = new();
+    private PropertyInfo? _orderProperty;
+    private bool _orderPropertyResolved;
+
+    // Cache compiled sort expressions
+    private readonly Dictionary<string, Func<TItem, object>> _compiledSortExpressions = new();
 
     protected override void OnInitialized()
     {
@@ -266,9 +276,16 @@
             IsSortAscending = true;
         }
 
+        // Cache the compiled expression to avoid recompiling on every sort
+        if (!_compiledSortExpressions.TryGetValue(column.HeaderText, out var compiledExpression))
+        {
+            compiledExpression = column.SortExpression.Compile();
+            _compiledSortExpressions[column.HeaderText] = compiledExpression;
+        }
+
         Items = IsSortAscending
-            ? Items.OrderBy(column.SortExpression.Compile()).ToList()
-            : Items.OrderByDescending(column.SortExpression.Compile()).ToList();
+            ? Items.OrderBy(compiledExpression).ToList()
+            : Items.OrderByDescending(compiledExpression).ToList();
     }
 
     private string GetSortClass(GridColumn<TItem> column)
@@ -283,14 +300,29 @@
 
     private static void CopyProperties(TItem source, TItem destination)
     {
-        var properties = typeof(TItem).GetProperties()
-            .Where(p => p is { CanRead: true, CanWrite: true });
+        var properties = GetCachedProperties();
 
         foreach (var property in properties)
         {
             var value = property.GetValue(source);
             property.SetValue(destination, value);
         }
+    }
+
+    private static PropertyInfo[] GetCachedProperties()
+    {
+        var type = typeof(TItem);
+
+        if (!_propertyCache.TryGetValue(type, out var properties))
+        {
+            properties = type.GetProperties()
+                .Where(p => p is { CanRead: true, CanWrite: true })
+                .ToArray();
+
+            _propertyCache[type] = properties;
+        }
+
+        return properties;
     }
 
     private static TItem CloneItemReflection(TItem source)
@@ -326,8 +358,14 @@
     {
         if (string.IsNullOrEmpty(OrderPropertyName)) return;
 
-        var property = typeof(TItem).GetProperty(OrderPropertyName);
-        if (property == null || !property.CanWrite) return;
+        // Cache the property lookup
+        if (!_orderPropertyResolved)
+        {
+            _orderProperty = typeof(TItem).GetProperty(OrderPropertyName);
+            _orderPropertyResolved = true;
+        }
+
+        if (_orderProperty == null || !_orderProperty.CanWrite) return;
 
         var startIndex = Math.Min(sourceIndex, targetIndex);
         var endIndex = Math.Max(sourceIndex, targetIndex);
@@ -335,8 +373,8 @@
         for (var index = startIndex; index <= endIndex; index++)
         {
             var item = Items[index];
-            var value = Convert.ChangeType(index, property.PropertyType);
-            property.SetValue(item, value);
+            var value = Convert.ChangeType(index, _orderProperty.PropertyType);
+            _orderProperty.SetValue(item, value);
         }
     }
 
@@ -349,5 +387,21 @@
         {
             InvokeAsync(StateHasChanged);
         }
+    }
+
+    public void Dispose()
+    {
+        // Clear caches to free memory
+        _compiledSortExpressions?.Clear();
+        ValidationErrors?.Clear();
+
+        // Clear item references
+        EditingItem = null;
+        OriginalItem = null;
+        Items?.Clear();
+        Columns?.Clear();
+
+        // Note: Static cache (_propertyCache) is shared across instances
+        // and should not be cleared here
     }
 }

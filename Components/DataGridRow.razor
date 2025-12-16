@@ -96,6 +96,12 @@
     private bool ShowDragHandle => AllowRowReorder && !ReadOnly && !IsEditing;
     private bool CanDrag => AllowRowReorder && !ReadOnly && !IsEditing;
 
+    // Track previous state for efficient change detection
+    private bool _prevIsEditing;
+    private bool _prevIsDragging;
+    private int _prevValidationErrorCount;
+    private TItem? _prevItem;
+
     private string GetRowClass()
     {
         if (IsEditing)
@@ -108,9 +114,19 @@
 
     protected override bool ShouldRender()
     {
-        // Only re-render when specific properties change
-        // Blazor's change detection will handle this automatically,
-        // but we can add custom logic here if needed
-        return true;
+        // Only re-render if critical properties changed
+        var shouldRender = _prevItem == null ||
+                          !ReferenceEquals(_prevItem, Item) ||
+                          _prevIsEditing != IsEditing ||
+                          _prevIsDragging != IsDragging ||
+                          _prevValidationErrorCount != (ValidationErrors?.Count ?? 0);
+
+        // Update tracked state
+        _prevItem = Item;
+        _prevIsEditing = IsEditing;
+        _prevIsDragging = IsDragging;
+        _prevValidationErrorCount = ValidationErrors?.Count ?? 0;
+
+        return shouldRender;
     }
 }
