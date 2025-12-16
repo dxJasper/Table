@@ -1,0 +1,116 @@
+@typeparam TItem where TItem : class, new()
+@using Table.Models
+@using Table.Components
+
+<tr class="@GetRowClass() @(IsDragging ? DataGridStyles.Dragging : string.Empty)"
+    @ondrop="OnDrop"
+    @ondragover:preventDefault
+    @ondrop:preventDefault>
+    <td class="@DataGridStyles.RowDragHandle @(ShowDragHandle ? string.Empty : DataGridStyles.Hidden)"
+        draggable="@CanDrag"
+        @ondragstart="OnDragStart"
+        @ondragstart:stopPropagation>
+        <span class="@DataGridStyles.RowDragIcon">⋮⋮</span>
+    </td>
+    @foreach (var column in Columns)
+    {
+        <DataGridCell TItem="TItem"
+                      Column="column"
+                      Item="Item"
+                      IsEditing="IsEditing"
+                      @key="column" />
+    }
+    @if (!ReadOnly)
+    {
+        <td class="@DataGridStyles.ActionsCell">
+            @if (IsEditing)
+            {
+                <button class="@DataGridStyles.Btn @DataGridStyles.BtnSave" @onclick="OnSave">Save</button>
+                <button class="@DataGridStyles.Btn @DataGridStyles.BtnCancel" @onclick="OnCancel">Cancel</button>
+            }
+            else
+            {
+                <button class="@DataGridStyles.Btn @DataGridStyles.BtnEdit" @onclick="OnEdit">Edit</button>
+                <button class="@DataGridStyles.Btn @DataGridStyles.BtnDelete" @onclick="OnDelete">Delete</button>
+            }
+        </td>
+    }
+</tr>
+@if (IsEditing && ValidationErrors != null && ValidationErrors.Count > 0)
+{
+    <tr class="@DataGridStyles.ValidationRow">
+        <td colspan="@(Columns.Count + 2)" class="@DataGridStyles.ValidationCell">
+            <div class="@DataGridStyles.ValidationErrors">
+                @foreach (var error in ValidationErrors)
+                {
+                    <div class="@DataGridStyles.ValidationError">@error</div>
+                }
+            </div>
+        </td>
+    </tr>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public TItem Item { get; set; } = default!;
+
+    [Parameter]
+    public List<GridColumn<TItem>> Columns { get; set; } = [];
+
+    [Parameter]
+    public bool IsEditing { get; set; }
+
+    [Parameter]
+    public bool IsNewRow { get; set; }
+
+    [Parameter]
+    public bool IsDragging { get; set; }
+
+    [Parameter]
+    public bool AllowRowReorder { get; set; }
+
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    [Parameter]
+    public List<string>? ValidationErrors { get; set; }
+
+    [Parameter]
+    public EventCallback OnEdit { get; set; }
+
+    [Parameter]
+    public EventCallback OnSave { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    [Parameter]
+    public EventCallback OnDelete { get; set; }
+
+    [Parameter]
+    public EventCallback<DragEventArgs> OnDragStart { get; set; }
+
+    [Parameter]
+    public EventCallback OnDrop { get; set; }
+
+    private bool ShowDragHandle => AllowRowReorder && !ReadOnly && !IsEditing;
+    private bool CanDrag => AllowRowReorder && !ReadOnly && !IsEditing;
+
+    private string GetRowClass()
+    {
+        if (IsEditing)
+        {
+            return IsNewRow ? $"{DataGridStyles.Editing} {DataGridStyles.NewRow}" : DataGridStyles.Editing;
+        }
+
+        return DataGridStyles.DataRow;
+    }
+
+    protected override bool ShouldRender()
+    {
+        // Only re-render when specific properties change
+        // Blazor's change detection will handle this automatically,
+        // but we can add custom logic here if needed
+        return true;
+    }
+}

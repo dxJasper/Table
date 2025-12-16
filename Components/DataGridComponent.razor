@@ -34,58 +34,25 @@
             {
                 var rowIndex = index;
                 var item = Items[rowIndex];
-                <tr class="@GetRowClass(item) @(DraggedRowIndex == rowIndex ? DataGridStyles.Dragging : string.Empty)"
-                    @ondrop="() => OnRowDrop(rowIndex)"
-                    @ondragover:preventDefault
-                    @ondrop:preventDefault>
-                    <td class="@DataGridStyles.RowDragHandle @(AllowRowReorder && !ReadOnly && !IsEditing(item) ? string.Empty : DataGridStyles.Hidden)"
-                        draggable="@(AllowRowReorder && !ReadOnly && !IsEditing(item))"
-                        @ondragstart="(e) => OnRowDragStart(e, rowIndex)"
-                        @ondragstart:stopPropagation>
-                        <span class="@DataGridStyles.RowDragIcon">⋮⋮</span>
-                    </td>
-                    @foreach (var column in Columns)
-                    {
-                        <td>
-                            @if (IsEditing(item))
-                            {
-                                @column.EditTemplate(item)
-                            }
-                            else
-                            {
-                                @column.DisplayTemplate(item)
-                            }
-                        </td>
-                    }
-                    @if (!ReadOnly)
-                    {
-                        <td class="@DataGridStyles.ActionsCell">
-                            @if (IsEditing(item))
-                            {
-                                <button class="@DataGridStyles.Btn @DataGridStyles.BtnSave" @onclick="() => SaveRow(item)">Save</button>
-                                <button class="@DataGridStyles.Btn @DataGridStyles.BtnCancel" @onclick="() => CancelEdit(item)">Cancel</button>
-                            }
-                            else
-                            {
-                                <button class="@DataGridStyles.Btn @DataGridStyles.BtnEdit" @onclick="() => EditRow(item)">Edit</button>
-                                <button class="@DataGridStyles.Btn @DataGridStyles.BtnDelete" @onclick="() => DeleteRow(item)">Delete</button>
-                            }
-                        </td>
-                    }
-                </tr>
-                @if (IsEditing(item) && ValidationErrors.TryGetValue(item, out var validationError))
-                {
-                    <tr class="@DataGridStyles.ValidationRow">
-                        <td colspan="@(Columns.Count + 2)" class="@DataGridStyles.ValidationCell">
-                            <div class="@DataGridStyles.ValidationErrors">
-                                @foreach (var error in validationError)
-                                {
-                                    <div class="@DataGridStyles.ValidationError">@error</div>
-                                }
-                            </div>
-                        </td>
-                    </tr>
-                }
+                var isEditing = IsEditing(item);
+                var validationErrors = ValidationErrors.TryGetValue(item, out var errors) ? errors : null;
+
+                <DataGridRow TItem="TItem"
+                             Item="item"
+                             Columns="Columns"
+                             IsEditing="isEditing"
+                             IsNewRow="IsNewItem(item)"
+                             IsDragging="DraggedRowIndex == rowIndex"
+                             AllowRowReorder="AllowRowReorder"
+                             ReadOnly="ReadOnly"
+                             ValidationErrors="validationErrors"
+                             OnEdit="() => EditRow(item)"
+                             OnSave="() => SaveRow(item)"
+                             OnCancel="() => CancelEdit(item)"
+                             OnDelete="() => DeleteRow(item)"
+                             OnDragStart="(e) => OnRowDragStart(e, rowIndex)"
+                             OnDrop="() => OnRowDrop(rowIndex)"
+                             @key="item" />
             }
         </tbody>
     </table>

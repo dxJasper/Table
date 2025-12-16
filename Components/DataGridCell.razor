@@ -1,0 +1,44 @@
+@typeparam TItem where TItem : class, new()
+@using Table.Models
+
+<td>
+    @if (IsEditing)
+    {
+        @Column.EditTemplate(Item)
+    }
+    else
+    {
+        @Column.DisplayTemplate(Item)
+    }
+</td>
+
+@code {
+    [Parameter, EditorRequired]
+    public GridColumn<TItem> Column { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public TItem Item { get; set; } = default!;
+
+    [Parameter]
+    public bool IsEditing { get; set; }
+
+    private bool _previousIsEditing;
+    private TItem? _previousItem;
+
+    protected override bool ShouldRender()
+    {
+        // Only re-render this cell if:
+        // 1. The editing state changed
+        // 2. The item reference changed
+        // 3. First render
+
+        var shouldRender = _previousItem == null ||
+                          _previousIsEditing != IsEditing ||
+                          !ReferenceEquals(_previousItem, Item);
+
+        _previousIsEditing = IsEditing;
+        _previousItem = Item;
+
+        return shouldRender;
+    }
+}
