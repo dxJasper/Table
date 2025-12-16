@@ -130,19 +130,16 @@
         }
     }
 
+    protected override bool ShouldRender()
+    {
+        // Always render to ensure child components receive parameter updates
+        // The child DataGridRow components handle their own render optimization
+        return true;
+    }
+
     private bool IsEditing(TItem item)
     {
         return EditingItem == item;
-    }
-
-    private string GetRowClass(TItem item)
-    {
-        if (EditingItem == item)
-        {
-            return IsNewItem(item) ? $"{DataGridStyles.Editing} {DataGridStyles.NewRow}" : DataGridStyles.Editing;
-        }
-
-        return DataGridStyles.DataRow;
     }
 
     private bool IsNewItem(TItem item)

@@ -8,7 +8,9 @@
       "Bash(dotnet run)",
       "Bash(tasklist:*)",
       "Bash(findstr:*)",
-      "Bash(ren GridColumn.razor DataGridColumn.razor)"
+      "Bash(ren GridColumn.razor DataGridColumn.razor)",
+      "Bash(timeout /t 2 /nobreak)",
+      "Bash(timeout:*)"
     ],
     "deny": [],
     "ask": []

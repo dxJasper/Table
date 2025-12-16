@@ -7,7 +7,7 @@
     @ondragover:preventDefault
     @ondrop:preventDefault>
     <td class="@DataGridStyles.RowDragHandle @(ShowDragHandle ? string.Empty : DataGridStyles.Hidden)"
-        draggable="@CanDrag"
+        draggable="@(CanDrag ? "true" : "false")"
         @ondragstart="OnDragStart"
         @ondragstart:stopPropagation>
         <span class="@DataGridStyles.RowDragIcon">⋮⋮</span>

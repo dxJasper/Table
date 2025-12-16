@@ -110,19 +110,19 @@
     max-width: 150px;
 }
 
-.custom-datagrid tbody tr {
+.custom-datagrid ::deep tbody tr {
     transition: background-color 0.2s ease;
 }
 
-.custom-datagrid tbody tr:hover {
+.custom-datagrid ::deep tbody tr:hover {
     background-color: #f8f9fa;
 }
 
-.custom-datagrid tbody tr.editing {
+.custom-datagrid ::deep tbody tr.editing {
     background-color: #fff3cd;
 }
 
-.custom-datagrid tbody tr.new-row {
+.custom-datagrid ::deep tbody tr.new-row {
     background-color: #d1ecf1;
 }
 
@@ -225,7 +225,7 @@
 }
 
 /* Row reordering */
-.custom-datagrid tbody tr.dragging {
+.custom-datagrid ::deep tbody tr.dragging {
     opacity: 0.4;
     background-color: #e9ecef !important;
 }
@@ -264,16 +264,16 @@
     user-select: none;
 }
 
-.custom-datagrid tbody tr:hover .row-drag-icon {
+.custom-datagrid ::deep tbody tr:hover .row-drag-icon {
     color: #495057;
 }
 
-.row-drag-handle:hover .row-drag-icon {
+.custom-datagrid ::deep .row-drag-handle:hover .row-drag-icon {
     color: #212529;
 }
 
 /* Validation Errors */
-.validation-row {
+.custom-datagrid ::deep .validation-row {
     background-color: #f8d7da;
 }
 
